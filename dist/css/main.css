@@ -87,7 +87,7 @@
 
 /* Main Menu */
 .main-menu {
-  background-color: #444;
+  background-color: rgba(68, 68, 68, 0.7);
   display: none;
   width: 100%;
   box-sizing: border-box;
