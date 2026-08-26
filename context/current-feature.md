@@ -1,55 +1,16 @@
-# Current Feature: Project Screenshots
+# Current Feature
 
 ## Status
 
-**In Progress.** Branch `feature/project-screenshots`.
+**Not Started.** No feature in progress.
 
 ## Goals
 
-- Capture the homepage of each featured project's live site — cebufest.com,
-  pvsystemtek.com, accuglassproducts.com — and land a WebP at the path
-  `mock-data.ts` already names for it (`/images/projects/{slug}.webp`).
-- All three featured cards render a real `next/image` thumbnail instead of the
-  "Screenshot pending" placeholder, with no change to `ProjectCard`.
-- Images are 800×600 (4:3, matching `aspect-4/3` on the card) and weigh little
-  enough that the Projects section does not become the heaviest thing on the page.
-- Each screenshot shows the site as it is today; `lastVerified` in `mock-data.ts`
-  stays truthful, and any site that has changed or died gets handled under the
-  §6.6 rules rather than screenshotted anyway.
+<!-- What success looks like, as bullets. Filled in by `/feature load`. -->
 
 ## Notes
 
-**Scope is the three featured projects, not all eight.** Only `featuredProjects`
-renders `ProjectCard`; `additionalLeadProjects` renders as a text-link list with
-no image, so a screenshot for Pass Labs, Duniway, BGW, ElexParts, or Trip to
-Philippines would have nowhere to appear. Those thumbnail paths stay unused —
-that is not a gap to fill in this feature.
-
-**No code change should be needed.** `publicAssetExists()` in
-[src/lib/assets.ts](src/lib/assets.ts) already switches a card from placeholder to
-`<Image>` the moment a file lands at the named path. That is the design; if this
-feature ends up editing `ProjectCard`, something has gone wrong. The one thing to
-confirm is that `existsSync` runs at build time — the page is statically
-generated — so a newly added file needs a rebuild, not just a refresh.
-
-**The alt text is already written**: `Screenshot of the {title} home page`. The
-screenshot has to actually be the home page for that to stay true.
-
-**Capture mechanics to settle during `start`:**
-
-- Playwright MCP is available. Viewport wants to be wide enough to get the
-  desktop layout (1280) but the stored file is 800×600, so it is a resize or a
-  crop, not a full-page capture — a full-page screenshot of a long marketing page
-  squeezed into 4:3 is unreadable.
-- Cookie banners, chat widgets, and consent overlays are the usual thing that
-  ruins these. Dismiss or wait them out before capturing.
-- Playwright writes PNG; converting to WebP needs a tool decision (`sharp` is not
-  a dependency yet, macOS `sips` does not do WebP, `cwebp` may not be installed).
-
-**Carried forward from Single Page Application** — the two related items in
-History: thumbnails do not exist (this feature), and
-`public/romualdo-dasig-portrait.jpg` is 5.5 MB and worth downscaling (not this
-feature).
+<!-- Additional context, constraints, or details from the spec. -->
 
 ## History
 
@@ -140,3 +101,48 @@ clears it, and a direct `/#experience` load is right on first paint. At 390 the
 highlight read Experience while the hash said `#projects` — correct, and worth
 knowing: late reflow drifts the browser's anchor landing, and the scroll position is
 what tells the truth afterwards.
+
+### Project Screenshots — completed 2026-08-26
+
+The three featured cards had been rendering "Screenshot pending" since the section
+was built. Captured the homepage of cebufest.com, pvsystemtek.com, and
+accuglassproducts.com and dropped a WebP at the path each entry in `mock-data.ts`
+already named. **No component changed** — `publicAssetExists()` was written for
+exactly this and switched all three cards to `next/image` on the next build, which
+is the design working rather than a happy accident.
+
+Captured at a 1280×960 viewport. That is exactly 4:3, so the downscale to the
+800×600 the card expects is a pure resize with no crop and no decision about what to
+cut. `sharp` 0.35.3 turned out to be already present as a transitive dependency of
+Next, so the conversion needed nothing installed; WebP q=82 gives 55–63 KB each,
+176 KB for all three. Two things had to be handled before the shutter: CebuFest's
+cookie banner (dismissed), and the scrollbar — an overlay in headless Chromium
+rather than layout-occupying, confirmed by `clientWidth === innerWidth === 1280`,
+and hidden with injected CSS so it did not sit in the right edge of every frame.
+
+Scope was the three featured projects, not all eight. `additionalLeadProjects`
+renders as a text-link list with no image slot, so the other five thumbnail paths in
+`mock-data.ts` stay unused by design.
+
+One test had to change, and it is the interesting part. `assets.test.ts` asserted
+`publicAssetExists('/images/projects/cebufest.webp') === false` — it recorded the
+launch state rather than the behaviour, and so failed the moment the feature
+succeeded. Repointed at a path that will never exist, and added a table-driven test
+over `featuredProjects` asserting each thumbnail resolves. That second one matters
+because a missing thumbnail does not error: it silently reverts a card to the
+placeholder, and nothing else in the suite would have noticed. 58 tests.
+
+Verified in the browser at 1280 and 390: all three render `<Image>` with
+`complete: true` and the right alt text, 4:3 preserved (359×269 desktop, 333×250
+mobile), no horizontal overflow, `next/image` serving a 384w variant at card size.
+
+**Carried forward — not done in this feature:**
+
+- **accuglassproducts.com serves an empty `<title>`.** Observed while capturing.
+  Not this repo's problem, but it is a live client site and a real SEO defect.
+- **`docs/RomualdoDasigResume.pdf` is still deliberately untracked** and was kept
+  out of this commit on purpose. §11 still wants it in `private/`, not `docs/`.
+- **`public/romualdo-dasig-portrait.jpg` is still 5.5 MB.** Unchanged here; the
+  tooling proven in this feature (sharp, already installed) is what will fix it.
+- **The other five thumbnail paths in `mock-data.ts` remain unused.** They only
+  become worth filling if `additionalLeadProjects` ever grows a card layout.
