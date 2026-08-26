@@ -12,19 +12,23 @@
  * section — a nav link scrolling to a heading that is not there is the failure this
  * pairing exists to prevent.
  *
- * NOTE: the three quotes that currently render are FICTIONAL development fixtures.
- * They exist so this layout can be seen. Replacing them is a content change.
+ * `hasTestimonials` currently reads false because `testimonialsEnabled` is off, so
+ * this section is built but not shown. It also covers the empty case, which is why
+ * the guard below reads it rather than counting the array a second time.
+ *
+ * NOTE: the three quotes this renders once enabled are FICTIONAL development
+ * fixtures. They exist so this layout can be seen. Replacing them is a content change.
  */
 
 import { SectionHeading } from '@/components/ui/section-heading';
-import { publishableTestimonials } from '@/lib/mock-data';
+import { hasTestimonials, publishableTestimonials } from '@/lib/mock-data';
 
 interface TestimonialsSectionProps {
   eyebrow: string;
 }
 
 export function TestimonialsSection({ eyebrow }: TestimonialsSectionProps) {
-  if (publishableTestimonials.length === 0) return null;
+  if (!hasTestimonials) return null;
 
   return (
     <section

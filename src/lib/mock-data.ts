@@ -714,5 +714,20 @@ export const publishableTestimonials: Testimonial[] = testimonials.filter(
   (t) => t.consentObtained !== null && t.quote.trim().length > 0,
 );
 
+/**
+ * A display switch, deliberately separate from the consent gate above.
+ *
+ * The consent filter answers "may this be published?"; this answers "do we want the
+ * section on the page yet?". Right now the only entries that clear consent are the
+ * fictional group-2 fixtures, so the section is held back rather than deleted — the
+ * component, its data, and its tests all stay in place.
+ *
+ * Flip to `true` when real consented quotes arrive. Nothing else needs to change:
+ * the nav item, the section numbering, and the section itself are all derived from
+ * `hasTestimonials` below.
+ */
+export const testimonialsEnabled = false;
+
 /** Hide the whole section — and its nav item — rather than render an empty heading. */
-export const hasTestimonials = publishableTestimonials.length > 0;
+export const hasTestimonials =
+  testimonialsEnabled && publishableTestimonials.length > 0;
