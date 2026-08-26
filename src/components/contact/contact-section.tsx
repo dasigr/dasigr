@@ -30,7 +30,7 @@ export function ContactSection({ eyebrow }: ContactSectionProps) {
         />
 
         <div className="grid items-start gap-8 lg:grid-cols-[1.15fr_0.85fr] lg:gap-12">
-          <ContactForm disabledNote="Delivery is not wired up in this build — the form is presentational for now." />
+          <ContactForm />
 
           <aside>
             <h3 className="mb-2.5 text-[1.05rem] font-semibold tracking-tight">
