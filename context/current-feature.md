@@ -1,159 +1,16 @@
-# Current Feature: Resume Request & Delivery
+# Current Feature
 
 ## Status
 
-**In Progress.** Branch `feature/resume-request-delivery`, started 2026-08-26.
+**Not Started.** No feature in progress.
 
 ## Goals
 
-- A recruiter submits the contact form and receives an email with the resume PDF
-  attached, in under 60 seconds (G-4). The form is the only route to the file —
-  no download link is added anywhere (FR-7a).
-- The owner receives a separate notification email for the same submission, with
-  every field, the Asia/Manila timestamp, the referrer, and whether the resume was
-  requested. `Reply-To` is the submitter's address so a reply goes straight back
-  to them (G-5).
-- `POST /api/contact` implements the §8 contract: `runtime = 'nodejs'`, an explicit
-  `maxDuration`, and the documented status/body for each outcome it handles
-  (200 success · 200 honeypot · 200 resume-unticked · 400 · 500). **429 is out of
-  scope — see Notes.**
-- One Zod schema in `src/lib/` is imported by both the form and the route
-  handler. Client validation is UX; the server copy is the control.
-- A minimal `/privacy` page exists and the consent checkbox links to it, so the
-  consent FR-6 requires is informed rather than blind (§9.5).
-- `ContactForm` becomes the site's second `'use client'` boundary and behaves per
-  FR-6: inline validation on blur, `aria-live` errors linked by
-  `aria-describedby`, disabled-with-spinner submit, success state that replaces
-  the form and names the address the PDF went to, and a failure state that always
-  offers the `mailto:` fallback so the lead is never lost.
-- The PDF moves from `docs/` to `private/` and is read via `process.cwd()`, with
-  `outputFileTracingIncludes` covering it so the route does not throw `ENOENT` in
-  production only.
-- Vitest covers the new `src/lib` logic — schema acceptance/rejection at each FR-6
-  boundary, honeypot detection, Asia/Manila formatting, and field sanitisation.
-  `npm run test` and `npm run build` both pass.
+<!-- What success looks like, as bullets. Filled in by `/feature load`. -->
 
 ## Notes
 
-**What exists today.** [contact-form.tsx](src/components/contact/contact-form.tsx)
-is presentational only — no `action`, no `onSubmit`, `type="button"`. Its header
-comment already names the three details that are the real contract here. Every
-field name in the markup (`name`, `email`, `company`, `message`, `requestResume`,
-`consent`, `_website`) matches the §8 request body, so the markup should need
-markup changes only where validation and state require them.
-
-**Nothing is installed.** No `zod`, `resend`, `react-hook-form`, `@upstash/redis`,
-or Turnstile package in `package.json`. `src/actions/` does not exist yet.
-
-**Decided: no spam controls in this feature — email delivery only.** Owner's call,
-2026-08-26: rate limit, honeypot enforcement, and Turnstile are all deferred. The
-`403` and `429` rows of the §8 table go unused; no `@upstash/redis` and no
-Turnstile dependency are added.
-
-**⚠️ The consequence, stated plainly so it is not discovered later:** the route
-ships with **zero spam protection**. Any script that can POST JSON can make the
-server email an arbitrary address, with a PDF attached, as fast as Resend will
-accept it. Three things that follow:
-
-- The exposure is the **Resend send quota and sender reputation**, not the PDF —
-  the file is public-by-forwarding anyway (FR-7a). A burnt sending domain is the
-  expensive failure here.
-- The `_website` honeypot input **stays in the markup** but the server ignores it.
-  It costs nothing and makes the follow-up a two-line change. The form comment is
-  updated to say the check is not live, so nobody reads the field as protection.
-- **Do not substitute an in-memory counter** when the limit does land. §8 warns
-  each invocation may be a fresh instance; a module-level `Map` reads as a limit
-  while enforcing nothing. No limit you know about beats a decorative one.
-
-This is safe only while the site is unlaunched and the URL is unknown. **Turnstile
-plus the Upstash limit should be the next feature, before `/#contact` is linked
-from LinkedIn.**
-
-**One open question that blocks end-to-end delivery:**
-
-- **Resend sender.** `.env` has `RESEND_API_KEY` and `EMAIL_FROM=onboarding@resend.dev`.
-  That sandbox sender can only deliver to the Resend account's own address — a
-  recruiter's inbox will be rejected, which fails G-4 silently. A verified sending
-  domain for `dasigr.com` is a prerequisite, not a polish item. The code reads
-  `EMAIL_FROM` from the environment, so this is a configuration change and not a
-  code change, but it must happen before launch.
-
-**Route handler vs Server Action.** §5 (line 231) leaves this open. If a Server
-Action is chosen, §8 becomes the action's input schema and return type rather than
-an HTTP contract, and the Turnstile check moves into the action body. The spec's
-own diagrams and FR-7 assume the Route Handler; deviating is a decision to record.
-
-**The gate is fragile in known ways** (CLAUDE.md, §11.1, FR-7a):
-
-- The repo must stay private while the PDF is committed, or
-  `raw.githubusercontent.com` serves it and the gate is decorative.
-- `https://www.dasigr.com/romualdo-dasig-resume.pdf` is live today. A 301 is
-  necessary but not sufficient — the file must actually be deleted from the origin
-  and any CDN cache at cutover, confirmed by a direct request against production.
-- No DRM, no watermarking, no expiring links. The point is knowing who asked, not
-  controlling redistribution.
-- Sanitise every field before interpolating into email HTML, and never echo the
-  submitted message back in Email A.
-
-**Budget.** A new `'use client'` boundary is the one thing that moves First Load
-JS. The 176 KB / 120 KB gap carried forward from the SPA feature is unresolved and
-this feature will add to it — measure the delta rather than the absolute.
-
-**Privacy.** FR-6 requires the consent checkbox to link to a privacy notice at
-`/privacy`, which does not exist. Either it lands here or the link is a dead link
-the spec forbids. → Built: `src/app/privacy/page.tsx`, linked from the consent
-label.
-
----
-
-## Implementation notes
-
-**`zod/mini`, not `zod`, and the reason is 54 KB.** The shared schema is imported
-by a Client Component, so whatever it imports ships to the browser. Measured
-against a `main` build with the same `node_modules`: classic zod put the client
-chunks at **246.0 KB gz, +69.3 KB over baseline**. The same schema rewritten in
-`zod/mini` — identical behaviour, all 146 tests unchanged — lands at **192.4 KB
-gz, +15.7 KB**. The `z` namespace in classic zod does not tree-shake. The
-functional `.check(z.trim(), z.minLength(2))` style in `contact-schema.ts` is
-therefore load-bearing, not taste, and the file says so.
-
-**Baseline for future features: 176.7 KB gz on `main`.** Measured by summing
-gzipped `.next/static/chunks/*.js`, because Next 16 with Turbopack no longer
-prints a First Load JS figure. Reproduce with a `git worktree` at `main` and a
-*copied* `node_modules` — a symlink fails with "points out of the filesystem
-root" under Turbopack.
-
-**`EMAIL_TO` was added** (defaults to `profile.email`). It exists because the
-Resend sandbox will only deliver to the account address, so without it there is no
-way to exercise the real path locally. Documented in `.env.example`.
-
-**Verified end to end, not just typechecked.** The success path was run against
-the live Resend API: `200 {"success":true,"resumeSent":true}`, both emails away in
-1.8s. The §8 failure rows were exercised with curl — 400 for an empty body, a bad
-email, malformed JSON, and an oversized payload; 405 on GET. The `resumeSent:false`
-path returns 200 with no attachment.
-
-**The ENOENT trap is closed and checked.** `.next/server/app/api/contact/route.js.nft.json`
-names `private/romualdo-dasig-resume.pdf`, so `outputFileTracingIncludes` is doing
-its job rather than being assumed to.
-
-**The gate holds.** `grep` over the served HTML for any `href` containing pdf,
-resume, or download returns nothing, and `/romualdo-dasig-resume.pdf`,
-`/private/romualdo-dasig-resume.pdf` and `/RomualdoDasigResume.pdf` all 404.
-
-**Browser-verified at 1280 and 390:** blur validation sets `aria-invalid` and
-links the message via `aria-describedby`; an empty submit shows all four errors and
-makes no network request; in-flight the button is disabled and shows a spinner; on
-success the form is replaced by a `role="status"` confirmation naming the address;
-on a forced 500 the form is kept with its values intact and a `role="alert"` block
-offering a `mailto:` prefilled with the subject and the user's own message. No
-horizontal overflow at 390.
-
-**Deliberately not implemented — FR-6's "one submission per 60 seconds per
-browser session".** On the success path the form is replaced, so it cannot fire; on
-the error path it would lock a recruiter out for a minute because *the server*
-failed, which is precisely the lost lead FR-7a says is worse than no gate. The
-in-flight guard covers the double-click case it was really protecting against.
+<!-- Additional context, constraints, or details from the spec. -->
 
 ## History
 
@@ -289,3 +146,80 @@ mobile), no horizontal overflow, `next/image` serving a 384w variant at card siz
   tooling proven in this feature (sharp, already installed) is what will fix it.
 - **The other five thumbnail paths in `mock-data.ts` remain unused.** They only
   become worth filling if `additionalLeadProjects` ever grows a card layout.
+
+### Resume Request & Delivery — completed 2026-08-26
+
+The form was markup. It now validates, posts to `POST /api/contact`, and the route
+emails the PDF to the requester and a lead notification to the owner with
+`Reply-To` set to the submitter — G-4 and G-5, the two goals the whole rebuild
+exists for. Verified against the live Resend API rather than a stub: 200, both
+emails away in 1.8s. The §8 failure rows were exercised with curl (400 on empty
+body, bad email, malformed JSON, oversized payload; 405 on GET), and the
+`resumeSent:false` path returns 200 with no attachment.
+
+**The interesting decision is `zod/mini`.** The schema is imported by a Client
+Component, so whatever it imports ships to the browser. Classic zod measured
+**+69.3 KB gzipped** against a 120 KB budget the framework floor already exceeds —
+the `z` namespace does not tree-shake. The same schema in `zod/mini`, identical
+behaviour and every test unchanged, is **+15.7 KB**. So the functional
+`.check(z.trim(), z.minLength(2))` style in `contact-schema.ts` is load-bearing
+rather than taste, and the file says so at the top: measure before switching back.
+This also produced the baseline the previous feature said was missing — **176.7 KB
+gz on `main`**, summed from gzipped `.next/static/chunks/*.js`, because Next 16
+with Turbopack prints no First Load JS figure. Reproduce with a `git worktree` and
+a *copied* `node_modules`; a symlink fails under Turbopack with "points out of the
+filesystem root".
+
+Two failure modes were closed by checking rather than assuming. The PDF is read
+through `process.cwd()`, so Next's tracing cannot see it and the serverless bundle
+would ship without it — `route.js.nft.json` was inspected and does name
+`private/romualdo-dasig-resume.pdf`. And the gate itself: no `href` in the served
+HTML contains pdf, resume, or download, and all three plausible static paths 404.
+Both would have failed silently in production only.
+
+The route is a Route Handler rather than a Server Action because §8 specifies
+status codes and 403/429 stay reserved for the spam controls that follow. Both
+sends use `allSettled`, not `all` — if the requester's copy bounces the owner
+still gets the lead. Resend reports provider errors in the resolved value rather
+than by rejecting, so a settled promise is not a delivered email and the check
+looks at `.error`.
+
+`/privacy` landed with it, because FR-6 wants the consent checkbox linked and an
+unlinked one is uninformed consent. It describes a mailbox, not a retention policy
+the setup cannot enforce (§9.5).
+
+Browser-verified at 1280 and 390: blur validation wires `aria-invalid` and
+`aria-describedby`, an empty submit shows all four errors and makes no request, the
+success state replaces the form and names the address, and a forced 500 keeps the
+form with its values intact behind a `mailto:` prefilled with the user's own
+message. 88 new tests, 146 total.
+
+**Carried forward — not done in this feature:**
+
+- **The route has NO spam protection.** Owner's call: Turnstile, the Upstash rate
+  limit, and the honeypot rejection are all deferred. Any script that can POST JSON
+  can make the server send mail; the exposure is the **Resend quota and sender
+  reputation**, not the PDF, which is forwardable by design. Safe only while the URL
+  is unknown. **This is the next feature, before `/#contact` is linked anywhere.**
+  When the limit lands, do not substitute a module-level `Map` — §8 warns each
+  invocation may be a fresh instance, and a decorative limit is worse than none.
+- **`EMAIL_FROM` is still `onboarding@resend.dev`.** The sandbox sender delivers
+  only to the Resend account address; every recruiter's copy is rejected with a 403.
+  Confirmed by observation, not inference. A verified domain at resend.com/domains
+  is a launch prerequisite. Configuration, not code — the route reads the env var.
+- **The PDF is now committed**, so the FR-7a gate depends entirely on the Bitbucket
+  repo staying private. Making it public later leaks the file retroactively even if
+  it is deleted first. (§11.1 names `raw.githubusercontent.com`; the Bitbucket
+  equivalent applies.)
+- **`https://www.dasigr.com/romualdo-dasig-resume.pdf` is still live on the old
+  host.** The 301 in `next.config.ts` does not exist yet, and a redirect alone is
+  not enough — the file must be deleted from the origin and any CDN cache at
+  cutover, confirmed with a direct request against production.
+- **FR-6's 60-second client throttle is deliberately absent.** On success the form
+  is replaced so it cannot fire; on the error path it would lock a recruiter out for
+  a minute because *the server* failed, which is the lost lead FR-7a calls worse
+  than no gate. The in-flight guard covers the double-click it was really for.
+- **`_website` is sent and ignored.** The input stays so the rejection is a two-line
+  change later. The form comment says the check is not live, so nobody reads the
+  field's presence as protection.
+- **`public/romualdo-dasig-portrait.jpg` is still 5.5 MB.** Untouched again.
