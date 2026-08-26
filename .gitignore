@@ -37,6 +37,10 @@ yarn-error.log*
 # vercel
 .vercel
 
+# playwright mcp — page snapshots, console logs, and raw capture PNGs.
+# Screenshots are committed as optimised WebP under public/, not from here.
+/.playwright-mcp/
+
 # typescript
 *.tsbuildinfo
 next-env.d.ts

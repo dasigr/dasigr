@@ -1,16 +1,55 @@
-# Current Feature
+# Current Feature: Project Screenshots
 
 ## Status
 
-**Not Started.** No feature in progress.
+**In Progress.** Branch `feature/project-screenshots`.
 
 ## Goals
 
-<!-- What success looks like, as bullets. Filled in by `/feature load`. -->
+- Capture the homepage of each featured project's live site — cebufest.com,
+  pvsystemtek.com, accuglassproducts.com — and land a WebP at the path
+  `mock-data.ts` already names for it (`/images/projects/{slug}.webp`).
+- All three featured cards render a real `next/image` thumbnail instead of the
+  "Screenshot pending" placeholder, with no change to `ProjectCard`.
+- Images are 800×600 (4:3, matching `aspect-4/3` on the card) and weigh little
+  enough that the Projects section does not become the heaviest thing on the page.
+- Each screenshot shows the site as it is today; `lastVerified` in `mock-data.ts`
+  stays truthful, and any site that has changed or died gets handled under the
+  §6.6 rules rather than screenshotted anyway.
 
 ## Notes
 
-<!-- Additional context, constraints, or details from the spec. -->
+**Scope is the three featured projects, not all eight.** Only `featuredProjects`
+renders `ProjectCard`; `additionalLeadProjects` renders as a text-link list with
+no image, so a screenshot for Pass Labs, Duniway, BGW, ElexParts, or Trip to
+Philippines would have nowhere to appear. Those thumbnail paths stay unused —
+that is not a gap to fill in this feature.
+
+**No code change should be needed.** `publicAssetExists()` in
+[src/lib/assets.ts](src/lib/assets.ts) already switches a card from placeholder to
+`<Image>` the moment a file lands at the named path. That is the design; if this
+feature ends up editing `ProjectCard`, something has gone wrong. The one thing to
+confirm is that `existsSync` runs at build time — the page is statically
+generated — so a newly added file needs a rebuild, not just a refresh.
+
+**The alt text is already written**: `Screenshot of the {title} home page`. The
+screenshot has to actually be the home page for that to stay true.
+
+**Capture mechanics to settle during `start`:**
+
+- Playwright MCP is available. Viewport wants to be wide enough to get the
+  desktop layout (1280) but the stored file is 800×600, so it is a resize or a
+  crop, not a full-page capture — a full-page screenshot of a long marketing page
+  squeezed into 4:3 is unreadable.
+- Cookie banners, chat widgets, and consent overlays are the usual thing that
+  ruins these. Dismiss or wait them out before capturing.
+- Playwright writes PNG; converting to WebP needs a tool decision (`sharp` is not
+  a dependency yet, macOS `sips` does not do WebP, `cwebp` may not be installed).
+
+**Carried forward from Single Page Application** — the two related items in
+History: thumbnails do not exist (this feature), and
+`public/romualdo-dasig-portrait.jpg` is 5.5 MB and worth downscaling (not this
+feature).
 
 ## History
 
