@@ -1,87 +1,16 @@
-# Current Feature: Active Navigation Link
+# Current Feature
 
 ## Status
 
-**In Progress.** Branch `feature/active-navigation-link`.
+**Not Started.** No feature in progress.
 
 ## Goals
 
-- Clicking a nav link marks that link as active in the header, on both the desktop
-  row and the open mobile menu, and clears the previously active one.
-- The active state is visible without relying on colour alone, and survives the
-  smooth scroll to the section (it is not a `:active`/`:focus` flash).
-- The active link is announced: `aria-current="true"` on the anchor, so a screen
-  reader reports which section the reader is in rather than only which link was
-  last pressed.
-- Landing on `/#projects` directly — a pasted or shared hash URL — shows Projects
-  active on first paint, not just after a click.
-- The nav array stays derived from `buildSections()`; no section id is written down
-  a second time to drive the highlight (the Testimonials gate must still remove the
-  item cleanly).
-- First Load JS does not regress: no new `'use client'` boundary. The highlight
-  lives inside the existing `SiteHeader` client component.
-- Any branching that decides "which section is active" lives in `src/lib/` with
-  Vitest coverage, not inline in the component.
+<!-- What success looks like, as bullets. Filled in by `/feature load`. -->
 
 ## Notes
 
-**Scope as asked is click-driven.** The request is "indicate the active link when
-you click it". The obvious neighbour is scroll-spy — the highlight following the
-reader as they scroll past sections without clicking anything. These conflict at one
-point: a click sets Projects active, then the smooth scroll passes About/Skills/
-Experience on the way, and a naive scroll-spy repaints the highlight three times
-before settling. Decide up front:
-
-- _Click-only_ — smallest change, no observer, but scrolling by wheel leaves the
-  highlight stale and lying about where the reader is.
-- _Click + `IntersectionObserver`_ — correct in both directions, needs the click to
-  suppress observer updates until the scroll settles.
-
-Default assumption if nothing is said: **click + IntersectionObserver**, because a
-stale highlight is worse than none on a single page whose whole navigation model is
-scrolling.
-
-**Built as click + scroll-spy, but not with `IntersectionObserver`.** Making IO
-answer "which section is at the reading line" needs a root collapsed to a 1px band
-via `rootMargin` — which is expressed in px, so the observer has to be torn down and
-rebuilt on every resize, and the answer still comes back as "entered/left" rather
-than "which one". A `passive` scroll listener coalesced into one
-`requestAnimationFrame` reads six `getBoundingClientRect()`s per frame and hands them
-to a pure function; that function is the part worth testing, and it is testable
-either way. IO would have been indirection, not savings.
-
-**Travel is released by the scroll settling, not by a timer.** A jump holds the
-highlight on its target and ignores everything the scroll passes on the way. It is
-released when the target is reached — or, if it never is, 120ms after scroll events
-stop. That second case is real and was caught in the browser: a hash change that
-produces no scroll at all left the highlight stuck on the target under a fixed
-expiry.
-
-**Touch points**
-
-- [src/components/layout/site-header.tsx](src/components/layout/site-header.tsx) —
-  the only `'use client'` boundary in the chrome; the nav `<ul>` at L79–100 renders
-  both the desktop row and the mobile panel from one array, so one change covers
-  both. The `Get My Resume` CTA also points at `#contact` and must **not** pick up
-  the active treatment.
-- [src/lib/navigation.ts](src/lib/navigation.ts) — `buildNavItems()` already emits
-  `href: '#id'`; the active check should compare against section ids from here.
-- `#top` (the brand link) is not a section in `BASE_SECTIONS` — Hero has no nav item
-  and no number. Clicking the brand should clear the highlight rather than fail to
-  match.
-
-**Constraints**
-
-- Hash-only navigation; these are anchors on one page, not routes. Do not reach for
-  `usePathname`/`useSelectedLayoutSegment`.
-- React Compiler is on — no hand-added `useMemo`/`useCallback`/`memo`.
-- Tailwind v4, CSS-based config; any new token goes in `@theme` in
-  [src/app/globals.css](src/app/globals.css).
-- The sticky header offsets scroll position — whatever decides "which section is in
-  view" has to account for `--header-height`, the same way the existing
-  `scroll-margin` does.
-- `prefers-reduced-motion` users get an instant jump rather than a smooth scroll;
-  the settle logic must not assume an animation ran.
+<!-- Additional context, constraints, or details from the spec. -->
 
 ## History
 
@@ -129,3 +58,46 @@ keypress leaves the URL untouched).
 - **Testimonials render the fictional fixtures** from mock-data.ts. Content swap.
 - **Experience bullets for Dentsu, Peregrine, and Zyrous are still duty statements**
   (§6.10 wants outcomes); two freelance periods carry no bullets at all.
+
+### Active Navigation Link — completed 2026-08-26
+
+The nav gave no sign of where the reader was. Clicking a link now marks it active,
+and the highlight follows the reader as they scroll, so it cannot go stale and claim
+a section that is not on screen. `aria-current="true"` announces it; the visual cue
+is an accent bar — left edge in the stacked menu, under the label in the desktop row
+— because §9.2 does not let colour carry it alone. No new `'use client'` boundary:
+it all lives in `SiteHeader`, which was already one.
+
+Clicks need no handler of their own. Following a nav anchor changes the hash, so a
+single `hashchange` listener covers the nav links, both `Get My Resume` buttons and
+the back button. A jump holds the highlight on its target and ignores every section
+the smooth scroll passes on the way — without that, one click on Projects repaints
+three times before settling. It is released on arrival, or 120ms after scroll events
+stop; that second path is what rescues a jump that never lands, and it was added
+after the browser caught a hash change producing no scroll at all leaving the
+highlight stuck.
+
+Not built on `IntersectionObserver`, despite the plan saying so. Answering "which
+section is at the reading line" needs an IO root collapsed to a 1px band via
+`rootMargin`, which is expressed in px and so must be rebuilt on every resize — and
+it still answers "entered/left" rather than "which one". A passive scroll listener
+coalesced into one `requestAnimationFrame` reads the section rects and hands them to
+a pure function. The reading line itself is read from the computed
+`scroll-padding-top`, so the highlight flips at exactly the line the browser lands
+anchors on rather than at a second, drifting copy of that number.
+
+Three decisions moved into `src/lib/navigation.ts` with 21 new tests (76 total):
+`pickActiveSection` (deepest section past the reading line; null above the first,
+where the Hero has no nav item; the last section once the page runs out of scroll,
+since Contact is shorter than the viewport and its top edge never reaches the line),
+`activeSectionFromHash` (`#top` and `#main` clear the highlight rather than fail to
+match) and `sectionIdsFromNav`, which keeps the ids derived from the nav so the
+Testimonials gate still removes the item cleanly.
+
+Verified in the browser at 1280 and 390 by watching `aria-current` through a
+MutationObserver: clicking Projects from the top goes `(none) → Projects` with no
+repaints in between, a manual scroll moves the highlight with no click, the brand
+clears it, and a direct `/#experience` load is right on first paint. At 390 the
+highlight read Experience while the hash said `#projects` — correct, and worth
+knowing: late reflow drifts the browser's anchor landing, and the scroll position is
+what tells the truth afterwards.
