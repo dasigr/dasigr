@@ -1,0 +1,1052 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Romualdo Dasig — Software Engineer (Prototype)</title>
+<meta name="description" content="Static visual prototype of dasigr.com v2. No functionality — layout and styling only." />
+<meta name="robots" content="noindex, nofollow" />
+<style>
+/* ==========================================================================
+   dasigr.com v2 — STATIC VISUAL PROTOTYPE
+   --------------------------------------------------------------------------
+   This file is a mockup only. Nothing here functions:
+     - the contact form does not submit (novalidate, no handler, no action)
+     - the mobile nav is a CSS checkbox hack, not JS
+     - "Earlier career" uses native <details>
+     - smooth scrolling is CSS `scroll-behavior`
+   There is zero JavaScript in this document, by design.
+
+   Content is drawn from context/project-overview.md and src/lib/mock-data.ts.
+   Testimonials shown are the FICTIONAL development fixtures from mock-data.ts
+   (the four real ones have no consent and would be filtered out).
+   Case studies are unpublished, so project cards carry no case-study link —
+   that is the expected launch state (FR-10), not an omission.
+   ========================================================================== */
+
+:root {
+  --bg:        #0F1922;
+  --bg-alt:    #12202B;
+  --surface:   #16242F;
+  --surface-2: #1B2D3A;
+  --line:      #23394A;
+  --line-soft: #1C2E3C;
+  --text:      #E6EFF5;
+  --dim:       #9DB3C2;   /* raised from the spec's #6C8394 — that pairing fails 4.5:1 (§9.2) */
+  --dimmer:    #7C93A3;
+  --accent:    #5AD1C0;
+  --accent-dk: #2BA898;
+  --amber:     #FFB224;
+  --radius:    12px;
+  --radius-sm: 8px;
+  --header-h:  64px;
+  --max:       1120px;
+  --font: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Inter, Roboto, Helvetica, Arial, sans-serif;
+  --mono: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, monospace;
+}
+
+*, *::before, *::after { box-sizing: border-box; }
+html { scroll-behavior: smooth; scroll-padding-top: calc(var(--header-h) + 16px); }
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--text);
+  font-family: var(--font);
+  font-size: 16px;
+  line-height: 1.65;
+  -webkit-font-smoothing: antialiased;
+}
+@media (prefers-reduced-motion: reduce) {
+  html { scroll-behavior: auto; }
+  * { transition: none !important; animation: none !important; }
+}
+
+a { color: var(--accent); text-decoration: none; }
+a:hover { text-decoration: underline; }
+:focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; border-radius: 4px; }
+img { max-width: 100%; display: block; }
+
+.wrap { width: 100%; max-width: var(--max); margin-inline: auto; padding-inline: 20px; }
+
+/* ---------- skip link ---------- */
+.skip {
+  position: absolute; left: 12px; top: -60px; z-index: 200;
+  background: var(--accent); color: #062020;
+  padding: 10px 16px; border-radius: var(--radius-sm); font-weight: 600;
+  transition: top .15s ease;
+}
+.skip:focus { top: 12px; }
+
+/* ---------- header ---------- */
+header.site {
+  position: sticky; top: 0; z-index: 100;
+  height: var(--header-h);
+  background: rgba(15,25,34,.82);
+  backdrop-filter: blur(10px);
+  border-bottom: 1px solid var(--line-soft);
+}
+.header-inner {
+  height: var(--header-h);
+  display: flex; align-items: center; justify-content: space-between; gap: 16px;
+}
+.brand { font-weight: 700; letter-spacing: -.01em; color: var(--text); font-size: 1rem; }
+.brand:hover { text-decoration: none; }
+.brand .dot { color: var(--accent); }
+
+nav.primary ul { display: flex; gap: 4px; list-style: none; margin: 0; padding: 0; }
+nav.primary a {
+  display: block; padding: 8px 12px; border-radius: var(--radius-sm);
+  color: var(--dim); font-size: .875rem; font-weight: 500;
+}
+nav.primary a:hover { color: var(--text); background: var(--surface); text-decoration: none; }
+nav.primary a.is-active { color: var(--accent); }         /* static demo of scroll-spy state */
+nav.primary a.is-active::after {
+  content: ""; display: block; height: 2px; margin-top: 4px;
+  background: var(--accent); border-radius: 2px;
+}
+
+.nav-cta {
+  display: inline-block; padding: 8px 14px; border-radius: var(--radius-sm);
+  background: var(--accent); color: #062020; font-weight: 600; font-size: .875rem;
+}
+.nav-cta:hover { background: #6FE0D0; text-decoration: none; }
+
+/* mobile menu — pure CSS checkbox toggle */
+#nav-toggle { position: absolute; opacity: 0; pointer-events: none; }
+.burger { display: none; cursor: pointer; padding: 8px; border-radius: var(--radius-sm); border: 1px solid var(--line); }
+.burger span { display: block; width: 20px; height: 2px; background: var(--text); margin: 4px 0; border-radius: 2px; }
+
+@media (max-width: 860px) {
+  .burger { display: block; }
+  nav.primary {
+    position: fixed; inset: var(--header-h) 0 auto 0;
+    background: var(--bg-alt); border-bottom: 1px solid var(--line);
+    display: none; padding: 12px 20px 20px;
+  }
+  #nav-toggle:checked ~ nav.primary { display: block; }
+  nav.primary ul { flex-direction: column; gap: 2px; }
+  nav.primary a { padding: 12px; font-size: 1rem; }
+  .nav-cta.desktop { display: none; }
+}
+@media (min-width: 861px) { .nav-cta.mobile { display: none; } }
+
+/* ---------- sections ---------- */
+section { padding: 88px 0; border-top: 1px solid var(--line-soft); }
+section:first-of-type { border-top: 0; }
+.eyebrow {
+  font-family: var(--mono); font-size: .75rem; letter-spacing: .12em;
+  text-transform: uppercase; color: var(--accent); margin: 0 0 8px;
+}
+h1 { font-size: clamp(2.1rem, 6vw, 3.4rem); line-height: 1.1; letter-spacing: -.02em; margin: 0 0 16px; }
+h2 { font-size: clamp(1.6rem, 3.5vw, 2.1rem); line-height: 1.2; letter-spacing: -.02em; margin: 0 0 12px; }
+h3 { font-size: 1.05rem; margin: 0 0 6px; letter-spacing: -.01em; }
+.lede { color: var(--dim); font-size: 1.05rem; max-width: 62ch; margin: 0 0 32px; }
+.section-head { margin-bottom: 40px; }
+
+/* ---------- buttons ---------- */
+.btn {
+  display: inline-flex; align-items: center; gap: 8px;
+  padding: 12px 20px; border-radius: var(--radius-sm);
+  font-weight: 600; font-size: .95rem; border: 1px solid transparent; cursor: pointer;
+}
+.btn:hover { text-decoration: none; }
+.btn-primary { background: var(--accent); color: #062020; }
+.btn-primary:hover { background: #6FE0D0; }
+.btn-ghost { border-color: var(--line); color: var(--text); background: transparent; }
+.btn-ghost:hover { border-color: var(--accent); color: var(--accent); }
+
+/* ---------- hero ---------- */
+.hero { padding-top: 72px; }
+.hero-grid { display: grid; grid-template-columns: 1.35fr .65fr; gap: 48px; align-items: center; }
+.hero p.position { color: var(--dim); font-size: 1.1rem; max-width: 54ch; margin: 0 0 28px; }
+.hero .cta-row { display: flex; flex-wrap: wrap; gap: 12px; margin-bottom: 28px; }
+.social-row { display: flex; gap: 18px; font-size: .9rem; }
+.social-row a { color: var(--dim); }
+.social-row a:hover { color: var(--accent); }
+
+.portrait {
+  aspect-ratio: 1 / 1; border-radius: 50%;
+  background:
+    radial-gradient(circle at 32% 28%, var(--surface-2), var(--surface) 60%, var(--bg-alt));
+  border: 1px solid var(--line);
+  display: grid; place-items: center;
+  color: var(--dimmer); font-family: var(--mono); font-size: .75rem; text-align: center;
+}
+
+/* ---------- career bus ---------- */
+.bus { margin-top: 56px; }
+.bus-head {
+  display: flex; flex-wrap: wrap; align-items: baseline; justify-content: space-between;
+  gap: 8px; margin-bottom: 10px;
+}
+.bus-title { font-family: var(--mono); font-size: .75rem; letter-spacing: .1em; text-transform: uppercase; color: var(--dim); margin: 0; }
+.bus-note { font-size: .8rem; color: var(--dimmer); margin: 0; }
+.bus-track {
+  display: flex; gap: 2px; height: 34px;
+  border-radius: var(--radius-sm); overflow: hidden;
+  border: 1px solid var(--line); background: var(--bg-alt); padding: 3px;
+}
+.bus-seg { border-radius: 4px; min-width: 3px; }
+.bus-seg.emp   { background: linear-gradient(180deg, var(--accent-dk), #1F8A7D); }
+.bus-seg.indep { background: repeating-linear-gradient(135deg, #34506180, #34506180 4px, #2A424F80 4px, #2A424F80 8px); border: 1px solid #3D5C6E; }
+.bus-seg.now   { background: linear-gradient(180deg, var(--amber), #E09112); }
+.bus-axis {
+  display: flex; justify-content: space-between;
+  font-family: var(--mono); font-size: .7rem; color: var(--dimmer); margin-top: 8px;
+}
+.bus-legend { display: flex; flex-wrap: wrap; gap: 18px; margin-top: 12px; font-size: .8rem; color: var(--dim); }
+.bus-legend span { display: inline-flex; align-items: center; gap: 7px; }
+.swatch { width: 12px; height: 12px; border-radius: 3px; display: inline-block; }
+
+/* ---------- fact row ---------- */
+.facts {
+  display: grid; grid-template-columns: repeat(4, 1fr); gap: 1px;
+  background: var(--line-soft); border: 1px solid var(--line-soft);
+  border-radius: var(--radius); overflow: hidden; margin-top: 36px;
+}
+.fact { background: var(--surface); padding: 18px 20px; }
+.fact dt { font-family: var(--mono); font-size: .7rem; letter-spacing: .1em; text-transform: uppercase; color: var(--dimmer); margin: 0 0 4px; }
+.fact dd { margin: 0; font-weight: 600; font-size: .95rem; }
+
+/* ---------- about ---------- */
+.about-grid { display: grid; grid-template-columns: .8fr 1.2fr; gap: 48px; align-items: start; }
+.about-body p { color: var(--dim); margin: 0 0 18px; }
+.about-body p strong { color: var(--text); font-weight: 600; }
+.about-portrait {
+  aspect-ratio: 4 / 5; border-radius: var(--radius);
+  background: linear-gradient(160deg, var(--surface-2), var(--bg-alt));
+  border: 1px solid var(--line); display: grid; place-items: center;
+  color: var(--dimmer); font-family: var(--mono); font-size: .75rem; text-align: center; padding: 16px;
+}
+
+/* ---------- skills ---------- */
+.skill-groups { display: grid; grid-template-columns: repeat(2, 1fr); gap: 20px; }
+.skill-group { background: var(--surface); border: 1px solid var(--line-soft); border-radius: var(--radius); padding: 22px; }
+.skill-group h3 { color: var(--text); display: flex; align-items: center; gap: 8px; }
+.tags { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 14px; list-style: none; padding: 0; }
+.tag {
+  font-size: .8rem; color: var(--dim); background: var(--bg-alt);
+  border: 1px solid var(--line); border-radius: 999px; padding: 4px 11px; white-space: nowrap;
+}
+.tag.solid { background: rgba(90,209,192,.1); border-color: rgba(90,209,192,.35); color: var(--accent); }
+
+/* ---------- experience timeline ---------- */
+.timeline { position: relative; padding-left: 28px; }
+.timeline::before {
+  content: ""; position: absolute; left: 5px; top: 6px; bottom: 6px;
+  width: 2px; background: var(--line);
+}
+.tl-item { position: relative; padding-bottom: 34px; }
+.tl-item::before {
+  content: ""; position: absolute; left: -28px; top: 7px;
+  width: 12px; height: 12px; border-radius: 50%;
+  background: var(--bg); border: 2px solid var(--line-soft);
+}
+.tl-item.current::before { background: var(--accent); border-color: var(--accent); box-shadow: 0 0 0 4px rgba(90,209,192,.15); }
+.tl-top { display: flex; flex-wrap: wrap; align-items: baseline; gap: 6px 12px; }
+.tl-role { font-weight: 650; font-size: 1.02rem; }
+.tl-company { color: var(--accent); font-weight: 600; }
+.tl-meta { font-family: var(--mono); font-size: .75rem; color: var(--dimmer); margin: 4px 0 10px; }
+.pill-now {
+  font-family: var(--mono); font-size: .65rem; letter-spacing: .08em; text-transform: uppercase;
+  color: var(--amber); border: 1px solid rgba(255,178,36,.4); background: rgba(255,178,36,.09);
+  border-radius: 999px; padding: 2px 8px;
+}
+.tl-item ul { margin: 0 0 12px; padding-left: 18px; color: var(--dim); font-size: .92rem; }
+.tl-item ul li { margin-bottom: 5px; }
+.tl-item .tags { margin-top: 10px; }
+
+details.earlier {
+  background: var(--surface); border: 1px solid var(--line-soft);
+  border-radius: var(--radius); padding: 16px 20px; margin-top: 8px;
+}
+details.earlier summary { cursor: pointer; font-weight: 600; list-style: none; color: var(--text); }
+details.earlier summary::-webkit-details-marker { display: none; }
+details.earlier summary::before { content: "▸ "; color: var(--accent); }
+details.earlier[open] summary::before { content: "▾ "; }
+details.earlier .earlier-body { margin-top: 16px; border-top: 1px solid var(--line-soft); padding-top: 16px; }
+.earlier-row { display: flex; flex-wrap: wrap; justify-content: space-between; gap: 8px; padding: 8px 0; color: var(--dim); font-size: .9rem; }
+.earlier-row + .earlier-row { border-top: 1px dashed var(--line-soft); }
+.earlier-row .r-co { color: var(--text); }
+
+.education {
+  margin-top: 28px; padding: 18px 20px;
+  border: 1px dashed var(--line); border-radius: var(--radius); color: var(--dim); font-size: .92rem;
+}
+.education strong { color: var(--text); }
+
+/* ---------- projects ---------- */
+.card-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; }
+.card {
+  background: var(--surface); border: 1px solid var(--line-soft);
+  border-radius: var(--radius); overflow: hidden; display: flex; flex-direction: column;
+}
+.card:hover { border-color: var(--line); }
+.thumb {
+  aspect-ratio: 4 / 3; background: linear-gradient(150deg, var(--surface-2), var(--bg-alt));
+  border-bottom: 1px solid var(--line-soft);
+  display: grid; place-items: center; color: var(--dimmer);
+  font-family: var(--mono); font-size: .7rem; text-align: center; padding: 12px;
+}
+.card-body { padding: 20px; display: flex; flex-direction: column; flex: 1; }
+.card-body p.desc { color: var(--dim); font-size: .9rem; margin: 0 0 14px; }
+.card-role { font-family: var(--mono); font-size: .72rem; letter-spacing: .06em; text-transform: uppercase; color: var(--dimmer); margin: 0 0 10px; }
+.card-foot {
+  margin-top: auto; padding-top: 16px; border-top: 1px solid var(--line-soft);
+  display: flex; align-items: center; justify-content: space-between; gap: 10px; flex-wrap: wrap;
+}
+.verified { font-family: var(--mono); font-size: .7rem; color: var(--dimmer); }
+.verified::before { content: "✓ "; color: var(--accent-dk); }
+
+.subhead { margin: 56px 0 16px; font-size: 1rem; font-weight: 650; }
+.link-list { list-style: none; margin: 0; padding: 0; border-top: 1px solid var(--line-soft); }
+.link-list li {
+  display: flex; flex-wrap: wrap; align-items: baseline; gap: 6px 14px;
+  padding: 14px 2px; border-bottom: 1px solid var(--line-soft);
+}
+.link-list .ll-title { font-weight: 600; min-width: 190px; }
+.link-list .ll-stack { color: var(--dimmer); font-size: .82rem; font-family: var(--mono); }
+.link-list .ll-note { color: var(--dim); font-size: .85rem; flex: 1; }
+
+.maintenance {
+  margin-top: 32px; padding: 18px 20px; background: var(--surface);
+  border: 1px solid var(--line-soft); border-radius: var(--radius);
+  color: var(--dim); font-size: .92rem;
+}
+.maintenance strong { color: var(--text); }
+
+/* ---------- testimonials ---------- */
+.quote-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; }
+.quote {
+  background: var(--surface); border: 1px solid var(--line-soft);
+  border-radius: var(--radius); padding: 24px; display: flex; flex-direction: column;
+}
+.quote blockquote { margin: 0 0 18px; color: var(--text); font-size: .95rem; line-height: 1.7; }
+.quote figcaption { margin-top: auto; border-top: 1px solid var(--line-soft); padding-top: 14px; font-size: .85rem; }
+.quote .q-author { font-weight: 650; }
+.quote .q-role { color: var(--dimmer); }
+
+/* ---------- contact ---------- */
+.contact-grid { display: grid; grid-template-columns: 1.15fr .85fr; gap: 48px; align-items: start; }
+form.contact {
+  background: var(--surface); border: 1px solid var(--line-soft);
+  border-radius: var(--radius); padding: 28px;
+}
+.field { margin-bottom: 18px; }
+.field label { display: block; font-size: .85rem; font-weight: 600; margin-bottom: 6px; }
+.field .req { color: var(--accent); }
+.field .hint { font-size: .78rem; color: var(--dimmer); font-weight: 400; }
+input[type="text"], input[type="email"], textarea {
+  width: 100%; padding: 11px 13px; font: inherit; font-size: .92rem;
+  color: var(--text); background: var(--bg-alt);
+  border: 1px solid var(--line); border-radius: var(--radius-sm);
+}
+input::placeholder, textarea::placeholder { color: #5F7686; }
+input:focus, textarea:focus { outline: none; border-color: var(--accent); box-shadow: 0 0 0 3px rgba(90,209,192,.12); }
+textarea { resize: vertical; min-height: 130px; }
+.row-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+.check { display: flex; gap: 10px; align-items: flex-start; margin-bottom: 14px; font-size: .88rem; color: var(--dim); }
+.check input { margin-top: 3px; accent-color: var(--accent); width: 16px; height: 16px; flex: none; }
+.check label { cursor: pointer; }
+.honeypot { position: absolute; left: -9999px; width: 1px; height: 1px; overflow: hidden; }
+.captcha-note {
+  font-family: var(--mono); font-size: .72rem; color: var(--dimmer);
+  border: 1px dashed var(--line); border-radius: var(--radius-sm);
+  padding: 10px 12px; margin: 4px 0 18px;
+}
+form.contact .btn-primary { width: 100%; justify-content: center; }
+.form-foot { margin-top: 14px; font-size: .78rem; color: var(--dimmer); text-align: center; }
+
+.contact-aside h3 { margin-bottom: 10px; }
+.contact-aside p { color: var(--dim); font-size: .92rem; margin: 0 0 22px; }
+.channel-list { list-style: none; margin: 0 0 26px; padding: 0; }
+.channel-list li { padding: 12px 0; border-bottom: 1px solid var(--line-soft); font-size: .92rem; }
+.channel-list .ch-label { font-family: var(--mono); font-size: .7rem; letter-spacing: .1em; text-transform: uppercase; color: var(--dimmer); display: block; }
+.notice {
+  background: rgba(90,209,192,.07); border: 1px solid rgba(90,209,192,.25);
+  border-radius: var(--radius); padding: 16px 18px; font-size: .87rem; color: var(--dim);
+}
+.notice strong { color: var(--accent); }
+
+/* ---------- footer ---------- */
+footer.site { border-top: 1px solid var(--line-soft); padding: 32px 0 48px; color: var(--dimmer); font-size: .85rem; }
+.footer-inner { display: flex; flex-wrap: wrap; justify-content: space-between; gap: 12px; align-items: center; }
+.footer-inner nav { display: flex; gap: 18px; }
+
+/* prototype banner */
+.proto-banner {
+  background: rgba(255,178,36,.1); border-bottom: 1px solid rgba(255,178,36,.3);
+  color: var(--amber); font-family: var(--mono); font-size: .74rem;
+  text-align: center; padding: 7px 20px; letter-spacing: .03em;
+}
+
+/* ---------- responsive ---------- */
+@media (max-width: 980px) {
+  .hero-grid, .about-grid, .contact-grid { grid-template-columns: 1fr; gap: 32px; }
+  .hero-grid .portrait { max-width: 220px; order: -1; }
+  .card-grid, .quote-grid { grid-template-columns: repeat(2, 1fr); }
+  .facts { grid-template-columns: repeat(2, 1fr); }
+}
+@media (max-width: 680px) {
+  section { padding: 64px 0; }
+  .card-grid, .quote-grid, .skill-groups, .row-2 { grid-template-columns: 1fr; }
+  .bus-track { height: 28px; }
+  .link-list .ll-title { min-width: 0; width: 100%; }
+}
+</style>
+</head>
+<body>
+
+<p class="proto-banner">STATIC PROTOTYPE — visual mockup only. Nothing on this page submits, saves, or navigates anywhere real.</p>
+
+<a class="skip" href="#main">Skip to content</a>
+
+<header class="site">
+  <div class="wrap header-inner">
+    <a class="brand" href="#top">romualdo dasig<span class="dot">.</span></a>
+
+    <input type="checkbox" id="nav-toggle" aria-hidden="true" tabindex="-1" />
+    <label class="burger" for="nav-toggle" aria-label="Toggle navigation menu">
+      <span></span><span></span><span></span>
+    </label>
+
+    <!-- Nav array is derived: #testimonials appears only because publishable
+         testimonials exist in the mock fixtures. No "Resume" item (FR-7a). -->
+    <nav class="primary" aria-label="Primary">
+      <ul>
+        <li><a href="#about">About</a></li>
+        <li><a href="#skills">Skills</a></li>
+        <li><a href="#experience">Experience</a></li>
+        <li><a href="#projects" class="is-active">Projects</a></li>
+        <li><a href="#testimonials">Testimonials</a></li>
+        <li><a href="#contact">Contact</a></li>
+        <li><a href="#contact" class="nav-cta mobile">Get My Resume</a></li>
+      </ul>
+    </nav>
+
+    <a href="#contact" class="nav-cta desktop">Get My Resume</a>
+  </div>
+</header>
+
+<main id="main">
+
+  <!-- ================= HERO (FR-1) ================= -->
+  <section id="top" class="hero">
+    <div class="wrap">
+      <div class="hero-grid">
+        <div>
+          <p class="eyebrow">Cebu, Philippines · Remote · UTC+8</p>
+          <h1>Romualdo Dasig<br />Software Engineer</h1>
+          <p class="position">
+            Building for the web since 2008 — 17+ years across Drupal, WordPress and,
+            for the last several, Next.js. Deep eCommerce work: B2B catalogues,
+            decoupled Drupal, and sites that have to keep taking orders while you rebuild them.
+          </p>
+          <div class="cta-row">
+            <a href="#contact" class="btn btn-primary">Get My Resume →</a>
+            <a href="#projects" class="btn btn-ghost">View Projects</a>
+          </div>
+          <div class="social-row">
+            <a href="#" rel="noopener noreferrer">LinkedIn ↗</a>
+            <a href="#" rel="noopener noreferrer">GitHub ↗</a>
+          </div>
+        </div>
+        <div class="portrait" aria-hidden="true">portrait<br />priority · dimensions reserved</div>
+      </div>
+
+      <!-- Career bus — the strongest fact on the resume, visible in one glance -->
+      <div class="bus">
+        <div class="bus-head">
+          <p class="bus-title">Continuous since Nov 2008 — 12 engagements, no gaps</p>
+          <p class="bus-note">17 years 9 months</p>
+        </div>
+        <div class="bus-track" role="img"
+             aria-label="Career timeline from November 2008 to August 2026, showing twelve consecutive engagements with no gaps: independent freelance work November 2008 to July 2011; Infocus Multimedia August to December 2011; independent January 2012 to January 2013; Elementz Interactive February 2013 to September 2014; Bridge Technology Partners October 2014 to March 2015; True Apex March 2015 to October 2018; independent November 2018 to June 2019; Zyrous July 2019 to December 2020; Peregrine Consulting January to June 2021; independent July to November 2021; Dentsu Myco Services December 2021 to May 2026; and independent again from June 2026 to the present.">
+          <div class="bus-seg indep" style="flex:32"></div>
+          <div class="bus-seg emp"   style="flex:5"></div>
+          <div class="bus-seg indep" style="flex:13"></div>
+          <div class="bus-seg emp"   style="flex:20"></div>
+          <div class="bus-seg emp"   style="flex:6"></div>
+          <div class="bus-seg emp"   style="flex:43"></div>
+          <div class="bus-seg indep" style="flex:8"></div>
+          <div class="bus-seg emp"   style="flex:18"></div>
+          <div class="bus-seg emp"   style="flex:6"></div>
+          <div class="bus-seg indep" style="flex:5"></div>
+          <div class="bus-seg emp"   style="flex:54"></div>
+          <div class="bus-seg now"   style="flex:3"></div>
+        </div>
+        <div class="bus-axis"><span>2008</span><span>2012</span><span>2016</span><span>2020</span><span>2024</span><span>Now</span></div>
+        <div class="bus-legend">
+          <span><i class="swatch" style="background:linear-gradient(180deg,#2BA898,#1F8A7D)"></i> Employed</span>
+          <span><i class="swatch" style="background:#35505f;border:1px solid #3D5C6E"></i> Independent / A5 Project</span>
+          <span><i class="swatch" style="background:#FFB224"></i> Current</span>
+        </div>
+      </div>
+
+      <dl class="facts">
+        <div class="fact"><dt>Experience</dt><dd>17+ years</dd></div>
+        <div class="fact"><dt>Location</dt><dd>Cebu, Philippines</dd></div>
+        <div class="fact"><dt>Availability</dt><dd>Remote · UTC+8</dd></div>
+        <div class="fact"><dt>Focus</dt><dd>Next.js · Drupal · eCommerce</dd></div>
+      </dl>
+    </div>
+  </section>
+
+  <!-- ================= ABOUT (FR-2) ================= -->
+  <section id="about">
+    <div class="wrap">
+      <div class="section-head">
+        <p class="eyebrow">01 — About</p>
+        <h2>Seventeen years, one continuous line</h2>
+      </div>
+      <div class="about-grid">
+        <div class="about-portrait" aria-hidden="true">portrait<br />4:5 · alt text describes the person,<br />not "John Doe"</div>
+        <div class="about-body">
+          <p>
+            I have been building for the web continuously since <strong>November 2008</strong> — twelve
+            engagements, employed and independent, with no gaps between them. The depth is in
+            <strong>Drupal and WordPress</strong>: custom themes, Drupal Commerce, B2B catalogues, and the
+            unglamorous work of keeping a store selling while it is being rebuilt underneath.
+          </p>
+          <p>
+            The last several years moved that toward <strong>Next.js and React</strong>. Two of the three
+            projects I lead with are Next.js builds; the third is a headless Drupal storefront behind a
+            decoupled API subdomain. Before that came <strong>five years at Dentsu Myco Services</strong> on a
+            live eCommerce site, where the constraint was never the framework — it was that nothing could
+            go down.
+          </p>
+          <p>
+            I design in Figma or start from v0, and build with <strong>Claude in the loop</strong>, the same
+            way I use Composer or Drush. It is tooling, not magic, and it is judged the same way: does the
+            thing it produced survive review.
+          </p>
+          <p>
+            I started as a <strong>board repair specialist at Teradyne</strong>, tracing faults on test-system
+            boards. That is where the habit of finding the <em>actual</em> fault instead of the plausible one
+            comes from, and it has been more useful in software than anything else I brought with me.
+          </p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ================= SKILLS (FR-3) ================= -->
+  <section id="skills">
+    <div class="wrap">
+      <div class="section-head">
+        <p class="eyebrow">02 — Skills</p>
+        <h2>What I work with</h2>
+        <p class="lede">Grouped by where they sit in a build. No proficiency bars — a percentage next to a
+          language name means nothing to the person reading it.</p>
+      </div>
+      <div class="skill-groups">
+        <article class="skill-group">
+          <h3>⚙️ Platforms</h3>
+          <ul class="tags">
+            <li class="tag solid">Next.js</li>
+            <li class="tag solid">Drupal 7–11</li>
+            <li class="tag">Drupal Commerce</li>
+            <li class="tag">WordPress</li>
+            <li class="tag">WooCommerce</li>
+            <li class="tag">Laravel</li>
+          </ul>
+        </article>
+        <article class="skill-group">
+          <h3>🔧 Back-end</h3>
+          <ul class="tags">
+            <li class="tag">RESTful API design</li>
+            <li class="tag">JSON:API</li>
+            <li class="tag">Third-party API integration</li>
+            <li class="tag">PHP</li>
+            <li class="tag">Python</li>
+            <li class="tag">C / C++</li>
+            <li class="tag">MySQL</li>
+            <li class="tag">MariaDB</li>
+            <li class="tag">Postgres</li>
+            <li class="tag">MVC</li>
+            <li class="tag">OOP &amp; design patterns</li>
+          </ul>
+        </article>
+        <article class="skill-group">
+          <h3>🎨 Front-end</h3>
+          <ul class="tags">
+            <li class="tag solid">React</li>
+            <li class="tag">JavaScript</li>
+            <li class="tag">TypeScript</li>
+            <li class="tag">HTML5</li>
+            <li class="tag">CSS3</li>
+            <li class="tag">SASS</li>
+            <li class="tag">Tailwind</li>
+            <li class="tag">jQuery</li>
+            <li class="tag">Bootstrap</li>
+            <li class="tag">Twig</li>
+            <li class="tag">BEM / SMACSS</li>
+            <li class="tag">Figma</li>
+            <li class="tag">v0</li>
+          </ul>
+        </article>
+        <article class="skill-group">
+          <h3>🧪 Quality &amp; tooling</h3>
+          <ul class="tags">
+            <li class="tag">PHPUnit</li>
+            <li class="tag">Selenium</li>
+            <li class="tag">Playwright</li>
+            <li class="tag">Jenkins CI</li>
+            <li class="tag">Git / Git Flow</li>
+            <li class="tag">Composer</li>
+            <li class="tag">DDEV</li>
+            <li class="tag">Drush</li>
+            <li class="tag">PSR-0 / PSR-4</li>
+            <li class="tag">Drupal coding standards</li>
+            <li class="tag">BrowserStack</li>
+            <li class="tag">JIRA</li>
+          </ul>
+        </article>
+        <article class="skill-group" style="grid-column: 1 / -1;">
+          <h3>☁️ Infrastructure</h3>
+          <ul class="tags">
+            <li class="tag">Docker</li>
+            <li class="tag">Kubernetes</li>
+            <li class="tag">AWS</li>
+            <li class="tag">Google Cloud</li>
+            <li class="tag">Pantheon</li>
+            <li class="tag">Vercel</li>
+            <li class="tag">Shell scripting</li>
+            <li class="tag">SSH</li>
+          </ul>
+        </article>
+      </div>
+    </div>
+  </section>
+
+  <!-- ================= EXPERIENCE (FR-4 / FR-4b) ================= -->
+  <section id="experience">
+    <div class="wrap">
+      <div class="section-head">
+        <p class="eyebrow">03 — Experience</p>
+        <h2>Work history</h2>
+        <p class="lede">One reverse-chronological sequence. Freelance periods are bounded and sit inline —
+          there is no parallel track, because there was never a parallel career.</p>
+      </div>
+
+      <div class="timeline">
+
+        <article class="tl-item current">
+          <div class="tl-top">
+            <span class="tl-role">Software Engineer</span>
+            <span class="tl-company">Freelance / A5 Project</span>
+            <span class="pill-now">Current</span>
+          </div>
+          <p class="tl-meta">Jun 2026 – Present · Danao City, Cebu</p>
+          <ul>
+            <li>Building and maintaining Next.js sites for local and overseas clients.</li>
+            <li>Ongoing maintenance for two long-running WordPress clients.</li>
+          </ul>
+          <ul class="tags"><li class="tag">Next.js</li><li class="tag">React</li><li class="tag">TypeScript</li><li class="tag">Vercel</li></ul>
+        </article>
+
+        <article class="tl-item">
+          <div class="tl-top">
+            <span class="tl-role">Drupal &amp; PHP Developer</span>
+            <span class="tl-company">Dentsu Myco Services Inc.</span>
+          </div>
+          <p class="tl-meta">Dec 2021 – May 2026 · Makati City</p>
+          <ul>
+            <li>Five years on a live eCommerce platform — feature work shipped without downtime.</li>
+            <li>Drupal module and theme development, API integrations, and release support.</li>
+            <li>PLACEHOLDER — replace with an outcome, not a duty statement (§6.10).</li>
+          </ul>
+          <ul class="tags"><li class="tag">Drupal 9–10</li><li class="tag">PHP</li><li class="tag">Twig</li><li class="tag">MySQL</li><li class="tag">Jenkins CI</li></ul>
+        </article>
+
+        <article class="tl-item">
+          <div class="tl-top">
+            <span class="tl-role">Software Engineer</span>
+            <span class="tl-company">Freelance / A5 Project</span>
+          </div>
+          <p class="tl-meta">Jul 2021 – Nov 2021 · Consolacion, Cebu</p>
+          <ul><li>Client site builds and maintenance between engagements.</li></ul>
+        </article>
+
+        <article class="tl-item">
+          <div class="tl-top">
+            <span class="tl-role">Software Engineer</span>
+            <span class="tl-company">Peregrine Consulting Group</span>
+          </div>
+          <p class="tl-meta">Jan 2021 – Jun 2021 · Chicago, Illinois (remote)</p>
+          <ul>
+            <li>Drupal development for US client work.</li>
+            <li>PLACEHOLDER — rewrite as an outcome (§6.10).</li>
+          </ul>
+          <ul class="tags"><li class="tag">Drupal</li><li class="tag">PHP</li></ul>
+        </article>
+
+        <article class="tl-item">
+          <div class="tl-top">
+            <span class="tl-role">Software Engineer</span>
+            <span class="tl-company">Zyrous Pty Ltd.</span>
+          </div>
+          <p class="tl-meta">Jul 2019 – Dec 2020 · Perth, Western Australia (remote)</p>
+          <ul>
+            <li>Web application development for Australian clients.</li>
+            <li>PLACEHOLDER — rewrite as an outcome (§6.10).</li>
+          </ul>
+          <ul class="tags"><li class="tag">PHP</li><li class="tag">JavaScript</li></ul>
+        </article>
+
+        <article class="tl-item">
+          <div class="tl-top">
+            <span class="tl-role">Software Engineer</span>
+            <span class="tl-company">Freelance / A5 Project</span>
+          </div>
+          <p class="tl-meta">Nov 2018 – Jun 2019 · Consolacion, Cebu</p>
+          <ul><li>TODO — bullets to be confirmed by the owner (§6.4).</li></ul>
+        </article>
+
+        <article class="tl-item">
+          <div class="tl-top">
+            <span class="tl-role">Web Designer and Developer</span>
+            <span class="tl-company">True Apex</span>
+          </div>
+          <p class="tl-meta">Mar 2015 – Oct 2018 · San Diego, California (remote)</p>
+          <ul>
+            <li>Built and maintained client sites across audio, industrial, and eCommerce sectors.</li>
+            <li>Drupal and WordPress theme development, plus Drupal Commerce storefronts.</li>
+          </ul>
+          <ul class="tags"><li class="tag">Drupal</li><li class="tag">WordPress</li><li class="tag">PHP</li><li class="tag">SASS</li></ul>
+        </article>
+
+        <article class="tl-item">
+          <div class="tl-top">
+            <span class="tl-role">Software Engineer</span>
+            <span class="tl-company">Bridge Technology Partners</span>
+          </div>
+          <p class="tl-meta">Oct 2014 – Mar 2015 · Cebu Business Park, Cebu City</p>
+          <ul><li>Web application development on client projects.</li></ul>
+        </article>
+
+        <article class="tl-item">
+          <div class="tl-top">
+            <span class="tl-role">Software Engineer</span>
+            <span class="tl-company">Elementz Interactive Inc.</span>
+          </div>
+          <p class="tl-meta">Feb 2013 – Sep 2014 · IT Park, Cebu City</p>
+          <ul><li>Drupal and PHP development for agency clients.</li></ul>
+          <ul class="tags"><li class="tag">Drupal 7</li><li class="tag">PHP</li><li class="tag">jQuery</li></ul>
+        </article>
+
+        <article class="tl-item">
+          <div class="tl-top">
+            <span class="tl-role">Software Engineer</span>
+            <span class="tl-company">Freelance / A5 Project</span>
+          </div>
+          <p class="tl-meta">Jan 2012 – Jan 2013 · Consolacion, Cebu</p>
+          <ul><li>TODO — bullets to be confirmed by the owner (§6.4).</li></ul>
+        </article>
+
+        <article class="tl-item">
+          <div class="tl-top">
+            <span class="tl-role">Web Developer</span>
+            <span class="tl-company">Infocus Multimedia and Business Solutions</span>
+          </div>
+          <p class="tl-meta">Aug 2011 – Dec 2011 · Mandaue City, Cebu · formerly Sports In Focus Pty. Ltd.</p>
+          <ul><li>Front-end and CMS work on company web properties.</li></ul>
+        </article>
+
+        <article class="tl-item">
+          <div class="tl-top">
+            <span class="tl-role">Software Engineer</span>
+            <span class="tl-company">Freelance / A5 Project</span>
+          </div>
+          <p class="tl-meta">Nov 2008 – Jul 2011 · Consolacion, Cebu</p>
+          <ul>
+            <li>First continuous web work — client sites built evenings and weekends alongside the
+              Teradyne role, then full-time.</li>
+            <li>The hardware-to-software transition, visible in the overlap.</li>
+          </ul>
+          <ul class="tags"><li class="tag">Drupal</li><li class="tag">WordPress</li><li class="tag">CodeIgniter</li><li class="tag">HTML5 / CSS3</li><li class="tag">jQuery</li></ul>
+        </article>
+
+      </div>
+
+      <details class="earlier">
+        <summary>Earlier career: electronics and test engineering, 2005–2010</summary>
+        <div class="earlier-body">
+          <div class="earlier-row">
+            <span><span class="r-co">Teradyne Philippines Ltd.</span> — Board Repair Specialist, A5XX Systems</span>
+            <span>Lapu-Lapu City · Aug 2007 – Oct 2010</span>
+          </div>
+          <div class="earlier-row">
+            <span><span class="r-co">Teradyne Philippines Ltd.</span> — Trainee, A5XX Systems</span>
+            <span>Lapu-Lapu City · Mar 2006 – Mar 2007</span>
+          </div>
+          <div class="earlier-row">
+            <span><span class="r-co">Cebu Mitsumi, Inc.</span> — Trainee, KKO Division</span>
+            <span>Danao City · Dec 2005 – Mar 2006</span>
+          </div>
+        </div>
+      </details>
+
+      <p class="education">
+        <strong>Education.</strong> CITE Technical Institute — Industrial Technician Program,
+        Major in Industrial Electronics Technology. Cebu City, June 2007.
+      </p>
+    </div>
+  </section>
+
+  <!-- ================= PROJECTS (FR-5) ================= -->
+  <section id="projects">
+    <div class="wrap">
+      <div class="section-head">
+        <p class="eyebrow">04 — Projects</p>
+        <h2>8 sites led · 3 clients maintained</h2>
+        <p class="lede">Every URL verified August 2026. Sites that died, were rebuilt by someone else, or
+          no longer show my work were removed rather than left to fail a click.</p>
+      </div>
+
+      <div class="card-grid">
+
+        <article class="card">
+          <div class="thumb" aria-hidden="true">cebufest.webp<br />800×600 · lazy</div>
+          <div class="card-body">
+            <h3>CebuFest</h3>
+            <p class="card-role">Lead Developer</p>
+            <p class="desc">A trip planner for Cebu. Visitors pick places, set dates, and get a day-by-day
+              itinerary with hotels matched to each night’s stop. Earns through Agoda affiliate bookings.</p>
+            <ul class="tags">
+              <li class="tag">Next.js</li><li class="tag">React</li><li class="tag">TypeScript</li>
+              <li class="tag">Tailwind</li><li class="tag">PostgreSQL</li>
+            </ul>
+            <div class="card-foot">
+              <a href="#" rel="noopener noreferrer">cebufest.com ↗</a>
+              <span class="verified">Verified 2026-08</span>
+            </div>
+            <!-- No case-study link: no publishable case study yet (FR-10). -->
+          </div>
+        </article>
+
+        <article class="card">
+          <div class="thumb" aria-hidden="true">pv-system-tek.webp<br />800×600 · lazy</div>
+          <div class="card-body">
+            <h3>PV System Tek</h3>
+            <p class="card-role">Lead Developer</p>
+            <p class="desc">Marketing and lead-capture site for a Cebu solar installer. Includes a live
+              quotation estimator that sizes a system and projects savings from the visitor’s monthly bill.</p>
+            <ul class="tags">
+              <li class="tag">Next.js</li><li class="tag">React</li><li class="tag">TypeScript</li>
+              <li class="tag">Tailwind</li>
+            </ul>
+            <div class="card-foot">
+              <a href="#" rel="noopener noreferrer">pvsystemtek.com ↗</a>
+              <span class="verified">Verified 2026-08</span>
+            </div>
+          </div>
+        </article>
+
+        <article class="card">
+          <div class="thumb" aria-hidden="true">accu-glass-products.webp<br />800×600 · lazy</div>
+          <div class="card-body">
+            <h3>Accu-Glass Products</h3>
+            <p class="card-role">Lead Developer</p>
+            <p class="desc">B2B eCommerce for ultra-high-vacuum components — 25+ categories, quick order,
+              distributor accounts. Runs a decoupled Drupal backend behind a separate API subdomain.</p>
+            <ul class="tags">
+              <li class="tag">Drupal (headless)</li><li class="tag">JSON:API</li><li class="tag">PHP</li>
+            </ul>
+            <div class="card-foot">
+              <a href="#" rel="noopener noreferrer">accuglassproducts.com ↗</a>
+              <span class="verified">Verified 2026-08</span>
+            </div>
+          </div>
+        </article>
+
+      </div>
+
+      <h3 class="subhead">Additional lead work</h3>
+      <ul class="link-list">
+        <li>
+          <a class="ll-title" href="#" rel="noopener noreferrer">Pass Labs ↗</a>
+          <span class="ll-stack">WordPress · PHP</span>
+          <span class="ll-note">Amplifier manufacturer. Dealer locator and product registration.</span>
+        </li>
+        <li>
+          <a class="ll-title" href="#" rel="noopener noreferrer">Duniway Stockroom ↗</a>
+          <span class="ll-stack">Drupal · PHP</span>
+          <span class="ll-note">Vacuum equipment supplier. Nine categories, cart, documents library.</span>
+        </li>
+        <li>
+          <a class="ll-title" href="#" rel="noopener noreferrer">BGW Amplifiers ↗</a>
+          <span class="ll-stack">Drupal · PHP</span>
+          <span class="ll-note">Cinema-sound amplifier lines, client roster, company timeline.</span>
+        </li>
+        <li>
+          <a class="ll-title" href="#" rel="noopener noreferrer">ElexParts ↗</a>
+          <span class="ll-stack">Drupal 7 · Drupal Commerce</span>
+          <span class="ll-note">My own electronics parts store — boards, sensors, displays.</span>
+        </li>
+        <li>
+          <a class="ll-title" href="#" rel="noopener noreferrer">Trip to Philippines ↗</a>
+          <span class="ll-stack">Drupal 7 · PHP</span>
+          <span class="ll-note">Travel guide covering twelve destinations, with affiliate flight search.</span>
+        </li>
+      </ul>
+
+      <p class="maintenance">
+        <strong>Maintained for:</strong> Seiwa Optical America · Arctic Zero — ongoing.
+        <strong>Pro-Physik</strong> — previously.
+      </p>
+    </div>
+  </section>
+
+  <!-- ================= TESTIMONIALS (FR-9) =================
+       Renders only because publishable fixtures exist. With zero consented
+       quotes, this section AND its nav item disappear entirely. -->
+  <section id="testimonials">
+    <div class="wrap">
+      <div class="section-head">
+        <p class="eyebrow">05 — Testimonials</p>
+        <h2>What clients said</h2>
+        <p class="lede">Quotes are verbatim and published with permission. Static grid, no carousel —
+          a recruiter skimming for sixty seconds should see all of them at once.</p>
+      </div>
+      <div class="quote-grid">
+
+        <figure class="quote">
+          <blockquote>He took a Drupal install nobody wanted to touch and made it something we could
+            actually ship against. What I remember most is that he told us which of our requests were a
+            bad idea before he built them.</blockquote>
+          <figcaption>
+            <div class="q-author">Dana Reyes</div>
+            <div class="q-role">Operations Manager, Northfield Vacuum Supply · 2025</div>
+          </figcaption>
+        </figure>
+
+        <figure class="quote">
+          <blockquote>We asked for a quote form and got a calculator that answers the customer’s real
+            question in about four seconds. Our enquiries went from vague to specific overnight.</blockquote>
+          <figcaption>
+            <div class="q-author">Marcus Hale</div>
+            <div class="q-role">Founder, Hale Renewables · 2026</div>
+          </figcaption>
+        </figure>
+
+        <figure class="quote">
+          <blockquote>Clear estimates, no surprises, and a handover document our own team could follow six
+            months later. That last part is rarer than it should be.</blockquote>
+          <figcaption>
+            <div class="q-author">Priya Nandakumar</div>
+            <div class="q-role">Head of Digital, Kestrel Instruments · 2025</div>
+          </figcaption>
+        </figure>
+
+      </div>
+    </div>
+  </section>
+
+  <!-- ================= CONTACT (FR-6 / FR-8) ================= -->
+  <section id="contact">
+    <div class="wrap">
+      <div class="section-head">
+        <p class="eyebrow">06 — Contact</p>
+        <h2>Get the resume</h2>
+        <p class="lede">Four fields. The PDF arrives by email, usually inside a minute.</p>
+      </div>
+
+      <div class="contact-grid">
+
+        <!-- Non-functional: no action, no method, novalidate, nothing wired up. -->
+        <form class="contact" novalidate onsubmit="return false;" aria-label="Contact and resume request">
+          <div class="row-2">
+            <div class="field">
+              <label for="f-name">Name <span class="req">*</span></label>
+              <input type="text" id="f-name" name="name" placeholder="Jane Recruiter" autocomplete="name" />
+            </div>
+            <div class="field">
+              <label for="f-email">Email <span class="req">*</span></label>
+              <input type="email" id="f-email" name="email" placeholder="jane@example.com" autocomplete="email" />
+            </div>
+          </div>
+
+          <div class="field">
+            <label for="f-company">Company <span class="hint">— optional</span></label>
+            <input type="text" id="f-company" name="company" placeholder="Acme Corp" autocomplete="organization" />
+          </div>
+
+          <div class="field">
+            <label for="f-message">Message <span class="req">*</span> <span class="hint">— 10–2000 characters</span></label>
+            <textarea id="f-message" name="message" placeholder="A little about the role or the project…"></textarea>
+          </div>
+
+          <!-- honeypot: visually and programmatically out of the way -->
+          <div class="honeypot" aria-hidden="true">
+            <label for="f-website">Website</label>
+            <input type="text" id="f-website" name="_website" tabindex="-1" autocomplete="off" />
+          </div>
+
+          <div class="check">
+            <input type="checkbox" id="f-resume" name="requestResume" checked />
+            <label for="f-resume">Send me the resume PDF</label>
+          </div>
+          <div class="check">
+            <input type="checkbox" id="f-consent" name="consent" />
+            <label for="f-consent">
+              I consent to my details being used to respond to this enquiry.
+              <a href="#">Privacy notice</a>. <span class="req">*</span>
+            </label>
+          </div>
+
+          <p class="captcha-note">[ Cloudflare Turnstile — invisible widget mounts here ]</p>
+
+          <button type="button" class="btn btn-primary">Send &amp; get the resume</button>
+          <p class="form-foot">Prototype only — this button does nothing.</p>
+        </form>
+
+        <aside class="contact-aside">
+          <h3>Direct channels</h3>
+          <p>If a form is not your thing, either of these reaches me.</p>
+          <ul class="channel-list">
+            <li>
+              <span class="ch-label">Email</span>
+              <a href="#">me [at] dasigr [dot] com</a>
+            </li>
+            <li>
+              <span class="ch-label">LinkedIn</span>
+              <a href="#" rel="noopener noreferrer">/in/romualdodasig ↗</a>
+            </li>
+            <li>
+              <span class="ch-label">GitHub</span>
+              <a href="#" rel="noopener noreferrer">github.com/dasigr ↗</a>
+            </li>
+            <li>
+              <span class="ch-label">Based in</span>
+              Cebu, Philippines · UTC+8
+            </li>
+          </ul>
+          <div class="notice">
+            <strong>Why a form?</strong> The resume is not posted anywhere on this site — the only copy is
+            the one emailed to you. It keeps the file current and lets me know who asked. Forward it freely
+            once you have it.
+          </div>
+        </aside>
+
+      </div>
+    </div>
+  </section>
+
+</main>
+
+<footer class="site">
+  <div class="wrap footer-inner">
+    <span>© 2026 Romualdo Dasig · Cebu, Philippines</span>
+    <nav aria-label="Footer">
+      <a href="#top">Back to top</a>
+      <a href="#">Privacy</a>
+      <a href="#" rel="noopener noreferrer">LinkedIn</a>
+      <a href="#" rel="noopener noreferrer">GitHub</a>
+      <!-- Deliberately no resume link here (FR-7a). -->
+    </nav>
+  </div>
+</footer>
+
+</body>
+</html>
