@@ -51,6 +51,12 @@ export interface MaintenanceClient {
   name: string;
   url?: string;
   lastVerified: string;
+  /**
+   * Whether the arrangement is current. Rendered — the maintenance line has to say
+   * "ongoing" or "previously", and inferring that from `note` would mean parsing
+   * prose. Frame a `previous` client as past work; never imply current involvement.
+   */
+  status: 'ongoing' | 'previous';
   /** Internal only. Not rendered. */
   note?: string;
 }
@@ -250,18 +256,23 @@ export const maintenanceClients: MaintenanceClient[] = [
     name: 'Seiwa Optical America',
     url: 'https://www.seiwaamerica.com',
     lastVerified: '2026-08',
-    note: 'WordPress + Elementor. Active, updated 2026.',
+    status: 'previous',
+    note:
+      'WordPress + Elementor. Site live and updated 2026, but the maintenance ' +
+      'arrangement has ended — past work.',
   },
   {
     name: 'Arctic Zero',
     url: 'https://www.arcticzero.com',
     lastVerified: '2026-08',
-    note: 'WordPress. Active.',
+    status: 'previous',
+    note: 'WordPress. Site live; maintenance arrangement ended — past work.',
   },
   {
     name: 'Pro-Physik',
     url: 'https://www.pro-physik.de',
     lastVerified: '2026-08',
+    status: 'previous',
     note:
       'Live and active, but rebuilt by German agency WebJazz for Wiley-VCH. ' +
       'Frame as past maintenance — do not imply current involvement.',
