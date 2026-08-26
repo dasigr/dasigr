@@ -1,1 +1,71 @@
 @import "tailwindcss";
+
+/* Tailwind v4 is CSS-first: the theme lives here, never in a tailwind.config file.
+   Palette is the prototype's, with one deliberate change carried over — the spec's
+   #6C8394 dim tone fails 4.5:1 against the background (§9.2), so --color-dim is
+   raised to #9DB3C2 and a separate --color-dimmer holds the decorative tone. */
+@theme {
+  --color-bg: #0f1922;
+  --color-bg-alt: #12202b;
+  --color-surface: #16242f;
+  --color-surface-2: #1b2d3a;
+  --color-line: #23394a;
+  --color-line-soft: #1c2e3c;
+  --color-text: #e6eff5;
+  --color-dim: #9db3c2;
+  --color-dimmer: #7c93a3;
+  --color-accent: #5ad1c0;
+  --color-accent-bright: #6fe0d0;
+  --color-accent-dark: #2ba898;
+  --color-accent-ink: #062020;
+  --color-amber: #ffb224;
+  --color-amber-dark: #e09112;
+
+  --font-sans: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Inter, Roboto,
+    Helvetica, Arial, sans-serif;
+  --font-mono: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, monospace;
+
+  --container-page: 1120px;
+
+  /* Six nav items plus a CTA do not fit beside the brand until ~864px, which falls
+     between Tailwind's md and lg. The header's `menu:` variant uses this. */
+  --breakpoint-menu: 54rem;
+}
+
+:root {
+  /* Consumed by scroll-padding below and by the sticky header's height. */
+  --header-height: 64px;
+  color-scheme: dark;
+}
+
+html {
+  scroll-behavior: smooth;
+  /* Hash targets must clear the sticky header, or every anchor lands under it. */
+  scroll-padding-top: calc(var(--header-height) + 16px);
+}
+
+body {
+  background-color: var(--color-bg);
+  color: var(--color-text);
+  font-family: var(--font-sans);
+  line-height: 1.65;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+
+  *,
+  *::before,
+  *::after {
+    transition-duration: 0.01ms !important;
+    animation-duration: 0.01ms !important;
+  }
+}
+
+:focus-visible {
+  outline: 2px solid var(--color-accent);
+  outline-offset: 3px;
+  border-radius: 4px;
+}
