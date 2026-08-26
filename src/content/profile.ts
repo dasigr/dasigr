@@ -28,6 +28,8 @@ export const profile = {
   email: 'me@dasigr.com',
   /** Obfuscated for the visible label only — the mailto: href uses the real address. */
   emailDisplay: 'me [at] dasigr [dot] com',
+  /** Canonical origin (§9.3). Used in outbound email bodies; no trailing slash. */
+  url: 'https://www.dasigr.com',
 } as const;
 
 export const socials: SocialLink[] = [
