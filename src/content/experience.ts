@@ -19,7 +19,8 @@
  *    tool to a particular employer — that is how Twig, MySQL and Jenkins CI ended up
  *    on Dentsu, and Drupal on Peregrine, which did no Drupal work at all.
  *
- * Two entries carry no `stack`: the ODT names no technology in them.
+ * One entry carries no `stack`: the ODT names no technology in Bridge Technology
+ * Partners at all.
  */
 
 export type EngagementKind = 'employed' | 'independent';
@@ -48,21 +49,28 @@ export const engagements: Engagement[] = [
     start: '2026-06',
     end: null,
     kind: 'independent',
-    // The ODT gives this entry the same three bullets as the 2021 and 2018 freelance
-    // periods and names no Next.js. Owner's call was to take that literally, so the
-    // "Building and maintaining Next.js sites" bullet and the Next.js/React/Vercel
-    // tags are gone from here. Hero and About still lead with Next.js — the fix for
-    // that gap belongs in the ODT, not in a bullet written back into this file.
+    // This entry used to carry the same three bullets as the 2021 and 2018 freelance
+    // periods, which is why the Experience section read Drupal-first while the hero
+    // and About led with Next.js. The ODT was rewritten at the source rather than
+    // patched here, and now names Next.js itself — so the two agree without a bullet
+    // being invented in this file. Angular and Bitbucket Pipelines are gone because
+    // the rewritten entry no longer names either.
     bullets: [
-      'Develop custom modules and themes for Drupal 7/8/9 that adhere to Drupal Coding Standards.',
-      'Develop Web Service APIs using JSON:API specification and web applications with Angular.',
-      'Set up CI/CD workflow with Bitbucket, Bitbucket Pipelines, AWS, and Google Cloud Platform.',
+      'Develop websites and web applications assisted with AI coding tools (i.e. Claude Code, v0).',
+      'Develop custom modules and themes for Drupal 10/11 that adhere to Drupal Coding Standards.',
+      'Develop Web Service APIs using JSON:API specification.',
+      'Develop Web Applications with Next.js.',
+      'Integrate with Third-Party APIs (i.e. Stripe, Resend).',
+      'Set up CI/CD workflow with GitHub/Bitbucket, Docker, Vercel, AWS, and Google Cloud Platform.',
     ],
     stack: [
-      'Drupal 7/8/9',
+      'Next.js',
+      'Drupal 10/11',
       'JSON:API',
-      'Angular',
-      'Bitbucket Pipelines',
+      'Stripe',
+      'Resend',
+      'Docker',
+      'Vercel',
       'AWS',
       'Google Cloud',
     ],

@@ -1,16 +1,42 @@
 # Current Feature
 
+## Current Role Sync & PDF Re-export
+
 ## Status
 
-Not Started
+In Progress
 
 ## Goals
 
-<!-- What success looks like, as bullet points. -->
+- `src/content/experience.ts`'s Jun 2026 – Present entry matches the rewritten ODT
+  entry: six bullets, verbatim wording, terminal period added.
+- Its `stack` obeys the file's rule — only technologies the ODT names in that entry.
+- `private/romualdo-dasig-resume.pdf` is re-exported from the edited ODT, so the file
+  `POST /api/contact` attaches is the resume the site describes.
+- The §6.10 backlog item "the ODT needs the Next.js line for the current role" is
+  marked resolved, and the comment in `experience.ts` recording that conflict is gone.
 
 ## Notes
 
-<!-- Context, constraints, or details from the spec. -->
+The ODT diff is two changes. The current role was rewritten from three
+Drupal-7/8/9-and-Angular bullets — the same three the 2021 and 2018 freelance
+periods carry — to six that describe the work as it is now: AI-assisted development,
+Drupal 10/11, JSON:API, **Next.js**, third-party API integration (Stripe, Resend),
+and a CI/CD line naming Docker and Vercel. Separately, SKILLS / ABILITIES moved from
+before PROJECTS to after EMPLOYMENT EXPERIENCE, and two of its lines were
+consolidated ("MVC Framework, OOP Best Practices, Design Patterns"; "Social Media and
+Email Marketing"). That reorder is PDF layout only and touches no content file —
+`src/content/skills.ts` is already a superset of the ODT list and is grouped by its
+own scheme (§6.5).
+
+The Next.js line is the significant one. The last sync recorded a conflict: the ODT
+named no Next.js in the current role, so the Experience section read Drupal-first
+while the hero and About led with Next.js. The ODT has now been fixed at the source,
+which is where §6.10 said the fix belonged, and the two agree without a bullet being
+written back into `experience.ts`.
+
+No code and no test should need to change: `src/lib/career.ts` reads only `start`,
+`end` and `kind`, and none of those move.
 
 ## History
 
