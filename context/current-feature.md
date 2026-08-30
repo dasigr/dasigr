@@ -2,30 +2,15 @@
 
 ## Status
 
-**Complete.** Work history synced from the ODT resume — see History below.
+Not Started
 
 ## Goals
 
-- `src/content/experience.ts` matches `private/romualdo-dasig-resume.odt` entry for
-  entry: company, role, location, dates, and bullets.
-- Every bullet is the ODT's own wording. Nothing invented, nothing carried over from
-  the prototype where the ODT says something different.
-- `stack` tags survive only where the ODT names that technology in the entry itself.
-  Tags attributed from the resume's global SKILLS list are dropped.
-- §6.3 of `context/project-overview.md` is re-reconciled against the ODT, since it is
-  the record the file claims to implement.
-- `npm run test` and `npm run build` pass.
+<!-- What success looks like, as bullet points. -->
 
 ## Notes
 
-The ODT is the declared source of truth for work history. Where it disagrees with the
-site, the site changes.
-
-Owner's call on the one real conflict: the ODT gives the **current** freelance entry
-the same three Drupal/Angular/CI-CD bullets it gives the 2021 and 2018 periods, and
-names no Next.js. Strict reading wins — the Next.js bullet and the
-Next.js/React/TypeScript/Vercel stack tags come off that entry. Hero and About still
-lead with Next.js; that gap is real and is recorded below rather than papered over.
+<!-- Context, constraints, or details from the spec. -->
 
 ## History
 
