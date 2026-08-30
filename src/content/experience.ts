@@ -1,20 +1,25 @@
 /**
  * src/content/experience.ts
  *
- * Employment history, matching §6.3 of context/project-overview.md — which is the
- * reconciliation of docs/RomualdoDasigResume.pdf against the old site.
+ * Employment history. **`private/romualdo-dasig-resume.odt` is the source of truth**
+ * — it is the editable original the PDF is exported from. §6.3 of
+ * context/project-overview.md is kept reconciled against it, not the other way round.
+ * If the two ever disagree again, the ODT wins and the spec table gets corrected.
  *
- * ── TWO RULES ──────────────────────────────────────────────────────────────────
+ * ── THREE RULES ────────────────────────────────────────────────────────────────
  * 1. ONE reverse-chronological sequence. The five freelance periods are bounded and
  *    sit inline. There is no parallel track — rendering one would reintroduce exactly
  *    the date confusion §6.4 exists to remove.
- * 2. NOTE: the resume PDF prints the Nov 2018 – Jun 2019 freelance entry ABOVE Zyrous
- *    (Jul 2019 – Dec 2020), which reads as a date error. The order below is correct;
- *    the PDF is the artifact that needs fixing. Do not "correct" this file to match it.
+ * 2. Every bullet is the ODT's own wording, with a terminal period added for the
+ *    rendered list. Do not rewrite one into site voice: the resume and the page get
+ *    read side by side, and a paraphrase is how they drift apart.
+ * 3. `stack` is the one field with no ODT counterpart, so it is constrained: a tag
+ *    may only name a technology the ODT names *in that entry* (its bullets or its
+ *    role title). The resume's global SKILLS list does not license attributing a
+ *    tool to a particular employer — that is how Twig, MySQL and Jenkins CI ended up
+ *    on Dentsu, and Drupal on Peregrine, which did no Drupal work at all.
  *
- * Bullets are only present where a real one exists. Several entries deliberately carry
- * none — the spec (§6.10) flags the missing ones as duty statements needing outcomes,
- * and an empty entry is honest where invented prose would not be.
+ * Two entries carry no `stack`: the ODT names no technology in them.
  */
 
 export type EngagementKind = 'employed' | 'independent';
@@ -43,27 +48,42 @@ export const engagements: Engagement[] = [
     start: '2026-06',
     end: null,
     kind: 'independent',
-    // The prototype claimed "ongoing maintenance for two long-running WordPress
-    // clients" here. Every entry in maintenanceClients is now marked `previous`,
-    // so that bullet would be a live overclaim — removed until there is a current
-    // maintenance client to point at.
+    // The ODT gives this entry the same three bullets as the 2021 and 2018 freelance
+    // periods and names no Next.js. Owner's call was to take that literally, so the
+    // "Building and maintaining Next.js sites" bullet and the Next.js/React/Vercel
+    // tags are gone from here. Hero and About still lead with Next.js — the fix for
+    // that gap belongs in the ODT, not in a bullet written back into this file.
     bullets: [
-      'Building and maintaining Next.js sites for local and overseas clients.',
+      'Develop custom modules and themes for Drupal 7/8/9 that adhere to Drupal Coding Standards.',
+      'Develop Web Service APIs using JSON:API specification and web applications with Angular.',
+      'Set up CI/CD workflow with Bitbucket, Bitbucket Pipelines, AWS, and Google Cloud Platform.',
     ],
-    stack: ['Next.js', 'React', 'TypeScript', 'Vercel'],
+    stack: [
+      'Drupal 7/8/9',
+      'JSON:API',
+      'Angular',
+      'Bitbucket Pipelines',
+      'AWS',
+      'Google Cloud',
+    ],
   },
   {
     company: 'Dentsu Myco Services Inc.',
     role: 'Drupal & PHP Developer',
-    location: 'Makati City',
+    location: 'Makati City, Manila',
     start: '2021-12',
     end: '2026-05',
     kind: 'employed',
     bullets: [
-      'Five years on a live eCommerce platform — feature work shipped without downtime.',
-      'Drupal module and theme development, API integrations, and release support.',
+      'Provide technical support to an eCommerce website.',
+      'Enhance or implement new features on the website.',
+      'Monitor site performance and do proactive maintenance.',
+      'Manage accounts and customer orders.',
+      'Fix both frontend UI and backend issues.',
     ],
-    stack: ['Drupal 9–10', 'PHP', 'Twig', 'MySQL', 'Jenkins CI'],
+    // Only what the role title itself names. Twig, MySQL and Jenkins CI came from the
+    // resume's global skills list, not from anything the ODT says about Dentsu.
+    stack: ['Drupal', 'PHP'],
   },
   {
     company: 'Freelance / Upwork',
@@ -72,27 +92,51 @@ export const engagements: Engagement[] = [
     start: '2021-07',
     end: '2021-11',
     kind: 'independent',
-    bullets: ['Client site builds and maintenance between engagements.'],
+    bullets: [
+      'Develop custom modules and themes for Drupal 7/8/9 that adhere to Drupal Coding Standards.',
+      'Develop Web Service APIs using JSON:API specification and web applications with Angular.',
+      'Set up CI/CD workflow with Bitbucket, Bitbucket Pipelines, AWS, and Google Cloud Platform.',
+    ],
+    stack: [
+      'Drupal 7/8/9',
+      'JSON:API',
+      'Angular',
+      'Bitbucket Pipelines',
+      'AWS',
+      'Google Cloud',
+    ],
   },
   {
     company: 'Peregrine Consulting Group',
     role: 'Software Engineer',
-    location: 'Chicago, Illinois (remote)',
+    location: 'Chicago, Illinois',
     start: '2021-01',
     end: '2021-06',
     kind: 'employed',
-    bullets: ['Drupal development for US client work.'],
-    stack: ['Drupal', 'PHP'],
+    // This was the IoT engagement, not a Drupal one. The old bullet and stack said
+    // otherwise and were wrong on both counts.
+    bullets: [
+      'Build prototypes of IoT devices.',
+      'Build an MQTT gateway for testing IoT devices.',
+      'Set up IoT devices to connect to Google Cloud IoT Core.',
+      'Develop a web application using Angular.',
+      'Develop a web service API using Laravel.',
+    ],
+    stack: ['Angular', 'Laravel', 'MQTT', 'Google Cloud IoT Core'],
   },
   {
     company: 'Zyrous Pty Ltd.',
     role: 'Software Engineer',
-    location: 'Perth, Western Australia (remote)',
+    location: 'Perth, Western Australia',
     start: '2019-07',
     end: '2020-12',
     kind: 'employed',
-    bullets: ['Web application development for Australian clients.'],
-    stack: ['PHP', 'JavaScript'],
+    bullets: [
+      'Build multiple websites based on Drupal.',
+      'Build mobile-responsive websites through Zeplin.',
+      'Develop custom modules and themes.',
+    ],
+    stack: ['Drupal', 'Zeplin'],
   },
   {
     company: 'Freelance / Upwork',
@@ -101,19 +145,26 @@ export const engagements: Engagement[] = [
     start: '2018-11',
     end: '2019-06',
     kind: 'independent',
+    bullets: [
+      'Develop custom modules and themes for Drupal 7/8 that adhere to Drupal Coding Standards.',
+      'Develop Web Service APIs and integrate third-party APIs.',
+      'Build mobile-responsive websites for client projects.',
+    ],
+    stack: ['Drupal 7/8'],
   },
   {
     company: 'True Apex',
-    role: 'Web Designer and Developer',
-    location: 'San Diego, California (remote)',
+    role: 'Software Engineer',
+    location: 'San Diego, California',
     start: '2015-03',
     end: '2018-10',
     kind: 'employed',
     bullets: [
-      'Built and maintained client sites across audio, industrial, and eCommerce sectors.',
-      'Drupal and WordPress theme development, plus Drupal Commerce storefronts.',
+      'Build enterprise-level eCommerce websites using Drupal Commerce.',
+      'Build fully-responsive websites from PSD.',
+      'Develop custom Drupal themes and modules.',
     ],
-    stack: ['Drupal', 'WordPress', 'PHP', 'SASS'],
+    stack: ['Drupal', 'Drupal Commerce'],
   },
   {
     company: 'Bridge Technology Partners',
@@ -122,7 +173,10 @@ export const engagements: Engagement[] = [
     start: '2014-10',
     end: '2015-03',
     kind: 'employed',
-    bullets: ['Web application development on client projects.'],
+    bullets: [
+      'Developed Web Service APIs.',
+      'Embrace Test-Driven Development methodology to assure code quality and faster deployment.',
+    ],
   },
   {
     company: 'Elementz Interactive Inc.',
@@ -131,8 +185,12 @@ export const engagements: Engagement[] = [
     start: '2013-02',
     end: '2014-09',
     kind: 'employed',
-    bullets: ['Drupal and PHP development for agency clients.'],
-    stack: ['Drupal 7', 'PHP', 'jQuery'],
+    bullets: [
+      'Develop an Enterprise Resource Planning (ERP) system for clients.',
+      'Develop Web Service APIs using CodeIgniter and Laravel.',
+      'Develop single-page web applications.',
+    ],
+    stack: ['CodeIgniter', 'Laravel'],
   },
   {
     company: 'Freelance / oDesk',
@@ -141,6 +199,12 @@ export const engagements: Engagement[] = [
     start: '2012-01',
     end: '2013-01',
     kind: 'independent',
+    bullets: [
+      'Develop websites in Drupal and WordPress for small-business clients.',
+      'Develop Web Service APIs or integrate third-party APIs.',
+      "Fix design issues and install added features on clients' websites.",
+    ],
+    stack: ['Drupal', 'WordPress'],
   },
   {
     company: 'Infocus Multimedia and Business Solutions',
@@ -150,18 +214,28 @@ export const engagements: Engagement[] = [
     start: '2011-08',
     end: '2011-12',
     kind: 'employed',
-    bullets: ['Front-end and CMS work on company web properties.'],
+    bullets: [
+      'Lead in the development of eCommerce websites.',
+      'Customize Drupal modules to function as per business requirements.',
+    ],
+    stack: ['Drupal'],
   },
   {
     company: 'Freelance / ScriptLance',
-    role: 'Software Engineer',
+    role: 'Web Developer',
     location: 'Consolacion, Cebu',
     start: '2008-11',
     end: '2011-07',
     kind: 'independent',
+    // The hardware-to-software transition used to be spelled out here in site voice.
+    // It is still visible without the prose: this entry starts Nov 2008, while the
+    // Teradyne board-repair role in earlierCareer runs to Oct 2010.
     bullets: [
-      'First continuous web work — client sites built evenings and weekends alongside the Teradyne role, then full-time.',
-      'The hardware-to-software transition, visible in the overlap.',
+      'Develop Web Service APIs or integrate third-party APIs.',
+      'Develop websites in Drupal, WordPress, and CodeIgniter.',
+      'Build mobile-responsive front-ends with HTML5, CSS3, and jQuery.',
+      'Develop websites ranging from personal blogging to eCommerce.',
+      "Fix design issues and install added features on clients' websites.",
     ],
     stack: ['Drupal', 'WordPress', 'CodeIgniter', 'HTML5 / CSS3', 'jQuery'],
   },
@@ -182,20 +256,20 @@ export interface EarlierRole {
 export const earlierCareer: EarlierRole[] = [
   {
     company: 'Teradyne Philippines Ltd.',
-    role: 'Board Repair Specialist, A5XX Systems',
-    location: 'Lapu-Lapu City',
+    role: 'Board Repair Specialist, A5XX Systems Department',
+    location: 'Lapu-Lapu City, Cebu',
     period: 'Aug 2007 – Oct 2010',
   },
   {
     company: 'Teradyne Philippines Ltd.',
-    role: 'Trainee, A5XX Systems',
-    location: 'Lapu-Lapu City',
+    role: 'Trainee, A5XX Systems Department',
+    location: 'Lapu-Lapu City, Cebu',
     period: 'Mar 2006 – Mar 2007',
   },
   {
     company: 'Cebu Mitsumi, Inc.',
     role: 'Trainee, KKO Division',
-    location: 'Danao City',
+    location: 'Danao City, Cebu',
     period: 'Dec 2005 – Mar 2006',
   },
 ];
@@ -210,6 +284,6 @@ export const earlierCareerSummary =
 export const education = {
   institution: 'CITE Technical Institute',
   program: 'Industrial Technician Program, Major in Industrial Electronics Technology',
-  location: 'Cebu City',
+  location: 'San Jose, Cebu City',
   completed: 'June 2007',
 } as const;

@@ -454,27 +454,31 @@ export const maintenanceClientCount = maintenanceClients.length; // 3
 
 Reverse-chronological by start date. **15 entries: 12 software (`primary`) + 3 electronics (`earlier`).**
 
+> 📄 **`private/romualdo-dasig-resume.odt` is the source of truth for this table.** It is the editable original the PDF exports from. This table is a reconciliation *of* it, and `src/content/experience.ts` implements this table. When the ODT changes, both follow — never the reverse.
+
 | Company | Role | Location | Dates | Track |
 |---------|------|----------|-------|-------|
-| Freelance / A5 Project | Software Engineer | Danao City, Cebu | Jun 2026 – **Present** | primary |
-| Dentsu Myco Services Inc. | Drupal & PHP Developer | Makati City | Dec 2021 – May 2026 | primary |
-| Freelance / A5 Project | Software Engineer | Consolacion, Cebu | Jul 2021 – Nov 2021 | primary |
+| Freelance / Upwork | Software Engineer | Danao City, Cebu | Jun 2026 – **Present** | primary |
+| Dentsu Myco Services Inc. | Drupal & PHP Developer | Makati City, Manila | Dec 2021 – May 2026 | primary |
+| Freelance / Upwork | Software Engineer | Consolacion, Cebu | Jul 2021 – Nov 2021 | primary |
 | Peregrine Consulting Group | Software Engineer | Chicago, Illinois | Jan 2021 – Jun 2021 | primary |
 | Zyrous Pty Ltd. | Software Engineer | Perth, Western Australia | Jul 2019 – Dec 2020 | primary |
-| Freelance / A5 Project | Software Engineer | Consolacion, Cebu | Nov 2018 – Jun 2019 | primary |
-| True Apex | **Web Designer and Developer** | San Diego, California | Mar 2015 – Oct 2018 | primary |
+| Freelance / Upwork | Software Engineer | Consolacion, Cebu | Nov 2018 – Jun 2019 | primary |
+| True Apex | Software Engineer | San Diego, California | Mar 2015 – Oct 2018 | primary |
 | Bridge Technology Partners | Software Engineer | Cebu Business Park, Cebu City | Oct 2014 – Mar 2015 | primary |
 | Elementz Interactive Inc. | Software Engineer | IT Park, Cebu City | Feb 2013 – Sep 2014 | primary |
-| Freelance / A5 Project | Software Engineer | Consolacion, Cebu | Jan 2012 – Jan 2013 | primary |
+| Freelance / oDesk | Software Engineer | Consolacion, Cebu | Jan 2012 – Jan 2013 | primary |
 | Infocus Multimedia and Business Solutions<br/>*(formerly Sports In Focus Pty. Ltd.)* | Web Developer | Mandaue City, Cebu | Aug 2011 – Dec 2011 | primary |
-| Freelance / A5 Project | Software Engineer | Consolacion, Cebu | Nov 2008 – Jul 2011 | primary |
-| Teradyne Philippines Ltd. | Board Repair Specialist, A5XX Systems | Lapu-Lapu City | Aug 2007 – Oct 2010 | earlier |
-| Teradyne Philippines Ltd. | Trainee, A5XX Systems | Lapu-Lapu City | Mar 2006 – Mar 2007 | earlier |
-| Cebu Mitsumi, Inc. | Trainee, KKO Division | Danao City | Dec 2005 – Mar 2006 | earlier |
+| Freelance / ScriptLance | **Web Developer** | Consolacion, Cebu | Nov 2008 – Jul 2011 | primary |
+| Teradyne Philippines Ltd. | Board Repair Specialist, A5XX Systems Department | Lapu-Lapu City, Cebu | Aug 2007 – Oct 2010 | earlier |
+| Teradyne Philippines Ltd. | Trainee, A5XX Systems Department | Lapu-Lapu City, Cebu | Mar 2006 – Mar 2007 | earlier |
+| Cebu Mitsumi, Inc. | Trainee, KKO Division | Danao City, Cebu | Dec 2005 – Mar 2006 | earlier |
 
-**🎓 Education:** CITE Technical Institute — Industrial Technician Program, Major in Industrial Electronics Technology, Cebu City, June 2007.
+**🎓 Education:** CITE Technical Institute — Industrial Technician Program, Major in Industrial Electronics Technology, San Jose, Cebu City, June 2007.
 
-> ⚠️ **PDF fix required.** In `RomualdoDasigResume.pdf` the `Nov 2018 – Jun 2019` freelance entry is printed *above* Zyrous (`Jul 2019 – Dec 2020`), breaking reverse-chronological order. A recruiter reading top-to-bottom sees the dates jump backwards then forwards, which looks like an error in the dates themselves. Reorder before the site launches — the two artifacts get read side by side.
+> ✅ **Two long-standing corrections landed with the ODT sync.** The reverse-chronological order is now correct in the resume itself — the `Nov 2018 – Jun 2019` freelance entry no longer prints above Zyrous, so the PDF fix this section demanded is done. And **True Apex is "Software Engineer"**, not "Web Designer and Developer"; the old title came from the pre-rebuild site and the ODT never agreed with it.
+
+> ⚠️ **The ODT gives the current freelance entry no Next.js.** Its three bullets (Drupal 7/8/9 modules and themes, JSON:API + Angular, Bitbucket/AWS/GCP CI/CD) are copied verbatim from the 2021 and 2018 freelance periods. `experience.ts` follows the ODT, so the Experience section's current role reads Drupal-first while §6.1's hero and §6.2's About lead with Next.js. **Fix belongs in the ODT** — writing a Next.js bullet back into `experience.ts` re-opens exactly the drift this section exists to close.
 
 ### 6.4 Timeline
 
@@ -485,11 +489,11 @@ gantt
     axisFormat  %Y
 
     section Independent
-    A5 Project (1)           :a1, 2008-11, 2011-07
-    A5 Project (2)           :a2, 2012-01, 2013-01
-    A5 Project (3)           :a3, 2018-11, 2019-06
-    A5 Project (4)           :a4, 2021-07, 2021-11
-    A5 Project (5) — current :active, a5, 2026-06, 2026-08
+    ScriptLance              :a1, 2008-11, 2011-07
+    oDesk                    :a2, 2012-01, 2013-01
+    Upwork (1)               :a3, 2018-11, 2019-06
+    Upwork (2)               :a4, 2021-07, 2021-11
+    Upwork (3) — current     :active, a5, 2026-06, 2026-08
 
     section Employed
     Infocus Multimedia       :e1, 2011-08, 2011-12
@@ -918,8 +922,9 @@ Three scaffolds exist in `src/content/case-studies.ts`, one per featured project
 | 🧰 | **Stack lists** — `projects.ts` carries `TODO` markers for database, hosting, styling, TypeScript, and the Agoda integration type (API vs deep links). The resume gives none of this | Confirm per project |
 | 👤 | **Role confirmation** — every entry says "Lead Developer" with a `TODO: confirm — sole developer, or led a team?` Sole developer is a strong claim when it is true | Confirm per project |
 | 🏷️ | **Portrait alt text** on the current site reads `John Doe` — a template leftover | Fix at migration |
-| 📊 | **Achievement bullets** for Dentsu, Peregrine, and Zyrous are duty descriptions, not outcomes. Where a number exists (traffic, order volume, load time, sites shipped) it does more work than the duty statement | Rewrite 3 entries |
-| 📄 | **Resume PDF** needs: 8/3 project counts, `https://` CebuFest link, corrected entry order (§6.3), and "17+ years" | Revise before launch |
+| 📊 | **Achievement bullets are duty descriptions, not outcomes** — now true of all twelve entries, since §6.3 syncs them verbatim from the ODT. Where a number exists (traffic, order volume, load time, sites shipped) it does more work than the duty statement. **Rewrite them in the ODT**; `experience.ts` copies whatever is there | Rewrite in ODT |
+| ⚛️ | **The ODT's current freelance entry names no Next.js** — it repeats the 2018/2021 Drupal bullets verbatim, so the Experience section's current role now disagrees with the hero and About (§6.3) | Rewrite in ODT |
+| 📄 | **Resume PDF** still needs: 8/3 project counts, `https://` CebuFest link, and "17+ years". Entry order is fixed | Revise before launch |
 
 ---
 
