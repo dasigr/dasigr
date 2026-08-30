@@ -37,7 +37,7 @@ export interface Engagement {
 /** The software career. Reverse-chronological by start date. 12 engagements. */
 export const engagements: Engagement[] = [
   {
-    company: 'Freelance / A5 Project',
+    company: 'Freelance / Upwork',
     role: 'Software Engineer',
     location: 'Danao City, Cebu',
     start: '2026-06',
@@ -66,7 +66,7 @@ export const engagements: Engagement[] = [
     stack: ['Drupal 9–10', 'PHP', 'Twig', 'MySQL', 'Jenkins CI'],
   },
   {
-    company: 'Freelance / A5 Project',
+    company: 'Freelance / Upwork',
     role: 'Software Engineer',
     location: 'Consolacion, Cebu',
     start: '2021-07',
@@ -95,7 +95,7 @@ export const engagements: Engagement[] = [
     stack: ['PHP', 'JavaScript'],
   },
   {
-    company: 'Freelance / A5 Project',
+    company: 'Freelance / Upwork',
     role: 'Software Engineer',
     location: 'Consolacion, Cebu',
     start: '2018-11',
@@ -135,7 +135,7 @@ export const engagements: Engagement[] = [
     stack: ['Drupal 7', 'PHP', 'jQuery'],
   },
   {
-    company: 'Freelance / A5 Project',
+    company: 'Freelance / oDesk',
     role: 'Software Engineer',
     location: 'Consolacion, Cebu',
     start: '2012-01',
@@ -153,7 +153,7 @@ export const engagements: Engagement[] = [
     bullets: ['Front-end and CMS work on company web properties.'],
   },
   {
-    company: 'Freelance / A5 Project',
+    company: 'Freelance / ScriptLance',
     role: 'Software Engineer',
     location: 'Consolacion, Cebu',
     start: '2008-11',

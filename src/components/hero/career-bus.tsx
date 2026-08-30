@@ -80,7 +80,7 @@ export function CareerBus({ career }: CareerBusProps) {
             aria-hidden="true"
             className={`inline-block size-3 rounded-xs bg-bg-alt ${SEGMENT_STYLES.independent}`}
           />
-          Independent / A5 Project
+          Independent / Freelance
         </li>
         <li className="inline-flex items-center gap-1.75">
           <span
