@@ -1,44 +1,70 @@
 # Current Feature
 
-## Current Role Sync & PDF Re-export
-
 ## Status
 
-In Progress
+Not Started
 
 ## Goals
 
-- `src/content/experience.ts`'s Jun 2026 – Present entry matches the rewritten ODT
-  entry: six bullets, verbatim wording, terminal period added.
-- Its `stack` obeys the file's rule — only technologies the ODT names in that entry.
-- `private/romualdo-dasig-resume.pdf` is re-exported from the edited ODT, so the file
-  `POST /api/contact` attaches is the resume the site describes.
-- The §6.10 backlog item "the ODT needs the Next.js line for the current role" is
-  marked resolved, and the comment in `experience.ts` recording that conflict is gone.
+<!-- What success looks like, as bullet points. -->
 
 ## Notes
 
-The ODT diff is two changes. The current role was rewritten from three
-Drupal-7/8/9-and-Angular bullets — the same three the 2021 and 2018 freelance
-periods carry — to six that describe the work as it is now: AI-assisted development,
-Drupal 10/11, JSON:API, **Next.js**, third-party API integration (Stripe, Resend),
-and a CI/CD line naming Docker and Vercel. Separately, SKILLS / ABILITIES moved from
-before PROJECTS to after EMPLOYMENT EXPERIENCE, and two of its lines were
-consolidated ("MVC Framework, OOP Best Practices, Design Patterns"; "Social Media and
-Email Marketing"). That reorder is PDF layout only and touches no content file —
-`src/content/skills.ts` is already a superset of the ODT list and is grouped by its
-own scheme (§6.5).
-
-The Next.js line is the significant one. The last sync recorded a conflict: the ODT
-named no Next.js in the current role, so the Experience section read Drupal-first
-while the hero and About led with Next.js. The ODT has now been fixed at the source,
-which is where §6.10 said the fix belonged, and the two agree without a bullet being
-written back into `experience.ts`.
-
-No code and no test should need to change: `src/lib/career.ts` reads only `start`,
-`end` and `kind`, and none of those move.
+<!-- Context, constraints, or details from the spec. -->
 
 ## History
+
+### Current Role Sync & PDF Re-export — completed 2026-08-30
+
+The ODT's Jun 2026 – Present entry was rewritten and `experience.ts` followed it.
+Three recycled bullets became six: AI-assisted development (Claude Code, v0), Drupal
+10/11, JSON:API, **Next.js**, third-party APIs (Stripe, Resend), and CI/CD across
+GitHub/Bitbucket, Docker, Vercel, AWS and GCP. `stack` follows rule 3 — every one of
+its nine tags is named by the ODT *in that entry* — which is also why Angular and
+Bitbucket Pipelines came off: the rewritten entry names neither.
+
+**This closed the one conflict the previous sync deliberately left open**, and it
+closed it the way §6.10 said it had to. The current role had been carrying the 2021
+and 2018 freelance periods' bullets verbatim, so the Experience section read
+Drupal-first while the hero and About led with Next.js. The fix went into the ODT, not
+into a bullet written back into `experience.ts` — the whole point of naming the ODT the
+source of truth is that a correction made anywhere else is a fifth place to drift from.
+Both the §6.3 warning and the §6.10 row are now resolved rather than worked around.
+
+The PDF was re-exported from the edited ODT with LibreOffice (`soffice --headless
+--convert-to pdf`), verified page by page: 4 pages, portrait and links intact, SKILLS
+correctly relocated below EMPLOYMENT EXPERIENCE. **194 KB, down from 301 KB**, which
+also settles the attachment-size concern carried forward from the last feature — the
+301 KB file was the DOCX-sourced export, and the DOCX is gone. `route.js.nft.json` was
+re-checked and still names the PDF, so the serverless bundle will not `ENOENT` in
+production only.
+
+Two smaller corrections. The `experience.ts` header claimed two entries carry no
+`stack` when only Bridge Technology Partners does. And the §6.10 PDF row still listed
+the 8/3 project counts and the `https://` CebuFest link as outstanding; both were
+already correct in the ODT, so that row is down to its last item.
+
+The ODT's other change was layout: SKILLS / ABILITIES moved below EMPLOYMENT
+EXPERIENCE and two of its lines were consolidated. No content file follows it —
+`skills.ts` is already a superset of the ODT list, grouped by its own §6.5 scheme.
+
+No code changed and no test changed. `src/lib/career.ts` reads only `start`, `end` and
+`kind`, none of which moved, so "17+ years", the no-gaps claim and the career-bus
+segments are untouched again — the derivation earning its keep for the second sync
+running. 146 tests pass, lint clean, build clean. Browser-verified at 1280 and 390:
+six bullets in order, nine tags wrapping onto one row at 1280 and several at 390, no
+horizontal overflow.
+
+**Carried forward — not done in this feature:**
+
+- **The PDF's ABOUT ME still says "over 17 years"** where the spec standardises on
+  "17+ years" (§0 item 5). This is now the *only* remaining §6.10 PDF item, and it is
+  an ODT edit rather than a code change.
+- **All twelve entries are still duty statements, not outcomes** (§6.10). Unchanged
+  by this sync — the new bullets are more current but no more measured. The rewrite
+  belongs in the ODT.
+- **The PDF is committed, so the FR-7a gate still depends on the repo staying
+  private.** Re-exporting a smaller file does not change that.
 
 ### Work History Sync from ODT — completed 2026-08-30
 
