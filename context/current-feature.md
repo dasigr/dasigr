@@ -2,17 +2,87 @@
 
 ## Status
 
-**Not Started.** No feature in progress.
+**Complete.** Work history synced from the ODT resume — see History below.
 
 ## Goals
 
-<!-- What success looks like, as bullets. Filled in by `/feature load`. -->
+- `src/content/experience.ts` matches `private/romualdo-dasig-resume.odt` entry for
+  entry: company, role, location, dates, and bullets.
+- Every bullet is the ODT's own wording. Nothing invented, nothing carried over from
+  the prototype where the ODT says something different.
+- `stack` tags survive only where the ODT names that technology in the entry itself.
+  Tags attributed from the resume's global SKILLS list are dropped.
+- §6.3 of `context/project-overview.md` is re-reconciled against the ODT, since it is
+  the record the file claims to implement.
+- `npm run test` and `npm run build` pass.
 
 ## Notes
 
-<!-- Additional context, constraints, or details from the spec. -->
+The ODT is the declared source of truth for work history. Where it disagrees with the
+site, the site changes.
+
+Owner's call on the one real conflict: the ODT gives the **current** freelance entry
+the same three Drupal/Angular/CI-CD bullets it gives the 2021 and 2018 periods, and
+names no Next.js. Strict reading wins — the Next.js bullet and the
+Next.js/React/TypeScript/Vercel stack tags come off that entry. Hero and About still
+lead with Next.js; that gap is real and is recorded below rather than papered over.
 
 ## History
+
+### Work History Sync from ODT — completed 2026-08-30
+
+`private/romualdo-dasig-resume.odt` is now the declared source of truth for §6.3, and
+`src/content/experience.ts` was rewritten against it. It had drifted further than
+expected: **eleven of twelve entries changed.** Two were wrong rather than merely thin
+— **Peregrine Consulting Group was the IoT engagement** (device prototypes, an MQTT
+gateway, Google Cloud IoT Core, Angular, Laravel) and carried the bullet "Drupal
+development for US client work" with a `['Drupal', 'PHP']` stack; the ODT names no
+Drupal there at all. And **True Apex is "Software Engineer"** — the site had been
+carrying "Web Designer and Developer", a title inherited from the pre-rebuild site
+that the ODT has never agreed with. Also corrected: ScriptLance's role (Web Developer,
+not Software Engineer), four locations that were abbreviated, and the education line,
+which regains San Jose.
+
+The one conflict was the current role, and it was the owner's call: the ODT gives
+Jun 2026 – Present the same three Drupal/Angular/CI-CD bullets it gives the 2021 and
+2018 freelance periods, and names no Next.js. Taken literally, so the Next.js bullet
+and the Next.js/React/TypeScript/Vercel tags came off. **The Experience section's
+current role now reads Drupal-first while the hero and About lead with Next.js** —
+recorded in §6.10 as an ODT fix, because writing the bullet back into `experience.ts`
+is how the two artifacts drift apart again.
+
+The rule that made `stack` tractable is written into the file header: **a tag may only
+name a technology the ODT names in that entry** — its own bullets or its role title.
+The resume's global SKILLS list licenses nothing. That rule is what removed Twig,
+MySQL and Jenkins CI from Dentsu and WordPress from True Apex; those were attributions
+nobody had a source for. Bridge Technology Partners now carries no `stack`, correctly.
+
+Every bullet is the ODT's wording with a terminal period added, which cost the site
+two lines of its own voice — the ScriptLance entry's "the hardware-to-software
+transition, visible in the overlap". The overlap still shows without the sentence:
+that entry starts Nov 2008 against a Teradyne role running to Oct 2010. The comment
+now says so instead of the page.
+
+No code changed and no test changed. `src/lib/career.ts` reads only `start`, `end` and
+`kind`, none of which moved, so "17+ years", the no-gaps claim and the career-bus
+segments are all untouched — which is the derivation working. 146 tests pass, lint
+clean, build clean. Browser-verified at 1280 and 390: 12 entries in order, every
+bullet and tag as intended, the earlier-career `<details>` and education line correct,
+no horizontal overflow.
+
+`private/romualdo-dasig-resume.docx` was deleted with the owner's agreement. Nothing in
+the repo referenced it, and once §6.3 names the ODT as the source of truth a third copy
+of the same resume is a fourth place for the work history to drift.
+
+**Carried forward — not done in this feature:**
+
+- **All twelve entries are duty statements, not outcomes** (§6.10). Syncing verbatim
+  made this uniform rather than partial. The rewrite belongs in the ODT.
+- **The ODT itself needs the Next.js line** for the current role, plus the three
+  remaining PDF items in §6.10 (8/3 project counts, `https://` CebuFest link,
+  "17+ years"). Entry order is now correct in the ODT and needs no further fix.
+- **The PDF in `private/` is 301 KB**, up from 186 KB at the last re-export. It is the
+  file `POST /api/contact` attaches, so the size is a delivery concern.
 
 ### Single Page Application — completed 2026-08-26
 
