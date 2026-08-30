@@ -478,7 +478,7 @@ Reverse-chronological by start date. **15 entries: 12 software (`primary`) + 3 e
 
 > ✅ **Two long-standing corrections landed with the ODT sync.** The reverse-chronological order is now correct in the resume itself — the `Nov 2018 – Jun 2019` freelance entry no longer prints above Zyrous, so the PDF fix this section demanded is done. And **True Apex is "Software Engineer"**, not "Web Designer and Developer"; the old title came from the pre-rebuild site and the ODT never agreed with it.
 
-> ⚠️ **The ODT gives the current freelance entry no Next.js.** Its three bullets (Drupal 7/8/9 modules and themes, JSON:API + Angular, Bitbucket/AWS/GCP CI/CD) are copied verbatim from the 2021 and 2018 freelance periods. `experience.ts` follows the ODT, so the Experience section's current role reads Drupal-first while §6.1's hero and §6.2's About lead with Next.js. **Fix belongs in the ODT** — writing a Next.js bullet back into `experience.ts` re-opens exactly the drift this section exists to close.
+> ✅ **The current freelance entry now names Next.js, and it was fixed in the ODT.** It had been carrying the 2021 and 2018 freelance periods' three Drupal bullets verbatim, so the Experience section's current role read Drupal-first while §6.1's hero and §6.2's About led with Next.js. The rewritten entry has six bullets — AI-assisted development (Claude Code, v0), Drupal 10/11, JSON:API, **Next.js**, third-party APIs (Stripe, Resend), and CI/CD across GitHub/Bitbucket, Docker, Vercel, AWS and GCP — and `experience.ts` copied them. The drift closed at the source, which is the only place it closes.
 
 ### 6.4 Timeline
 
@@ -923,8 +923,7 @@ Three scaffolds exist in `src/content/case-studies.ts`, one per featured project
 | 👤 | **Role confirmation** — every entry says "Lead Developer" with a `TODO: confirm — sole developer, or led a team?` Sole developer is a strong claim when it is true | Confirm per project |
 | 🏷️ | **Portrait alt text** on the current site reads `John Doe` — a template leftover | Fix at migration |
 | 📊 | **Achievement bullets are duty descriptions, not outcomes** — now true of all twelve entries, since §6.3 syncs them verbatim from the ODT. Where a number exists (traffic, order volume, load time, sites shipped) it does more work than the duty statement. **Rewrite them in the ODT**; `experience.ts` copies whatever is there | Rewrite in ODT |
-| ⚛️ | **The ODT's current freelance entry names no Next.js** — it repeats the 2018/2021 Drupal bullets verbatim, so the Experience section's current role now disagrees with the hero and About (§6.3) | Rewrite in ODT |
-| 📄 | **Resume PDF** still needs: 8/3 project counts, `https://` CebuFest link, and "17+ years". Entry order is fixed | Revise before launch |
+| 📄 | **Resume PDF** still says **"over 17 years"** in ABOUT ME where this document standardises on **"17+ years"** (§0 item 5). Entry order, the 8/3 project counts and the `https://` CebuFest link are all fixed | Revise before launch |
 
 ---
 
