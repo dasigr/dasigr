@@ -1,16 +1,46 @@
 # Current Feature
 
+## Sugbo Rentals Replaces Accu-Glass in the Featured Grid
+
 ## Status
 
-Not Started
+In Progress — awaiting owner confirmation of the Sugbo Rentals copy and stack,
+then commit.
 
 ## Goals
 
-<!-- What success looks like, as bullet points. -->
+- `featuredProjects` leads with CebuFest · PV System Tek · **Sugbo Rentals**.
+- **Accu-Glass Products is not lost** — it moves down to `additionalLeadProjects`
+  as a text link, keeps its live URL, and keeps its case study. It is *not* an
+  `excludedFromPortfolio` entry: nothing is wrong with it.
+- `www.sugborentals.com` verified live before the entry is written (rule 1), and
+  its `stack` names only what the response actually proves (rule 3).
+- An 800×600 WebP thumbnail exists at the path the entry names, so the card
+  renders `next/image` rather than "Screenshot pending".
+- `npm run test`, `npm run lint` and `npm run build` all clean; the page verified
+  in the browser at 1280 and 390.
 
 ## Notes
 
-<!-- Context, constraints, or details from the spec. -->
+- **`leadProjectCount` goes 8 → 9.** The Projects heading, §14.1 Q10, the G-2
+  row, the §6.7 recount note and the portfolio-contents row in the spec all
+  carried 8 / "5 text links" and were updated. The site's own copy is derived, so
+  only the prose and the resume PDF could go stale.
+- The resume PDF still says 8/3 (§6.10). This change widens that gap by one and
+  does not close it — an ODT edit, not a code change.
+- `caseStudies['accu-glass-products']` is untouched and still publishable. No
+  route exists at `/projects/[slug]` yet, so nothing renders either way.
+- The Accu-Glass thumbnail stays in `public/` and stops being rendered:
+  `additionalLeadProjects` is a text-link list with no image slot, which is
+  already true of the five paths beside it.
+- **The lede had to stop naming a month.** "Every URL verified August 2026" was
+  the last hardcoded claim in the section, and a 2026-09 entry made it false.
+  `formatVerifiedWindow()` now reads the window off `lastVerified` — it renders
+  "August–September 2026" today, one month if they ever converge, and returns ""
+  so the caller can drop the sentence rather than print a blank date. 6 new tests
+  (152 total).
+- The thumbnail was captured at 1280×960 and resized to 800×600 — exactly 4:3,
+  so a pure resize with no crop, the same method as the first three.
 
 ## History
 
