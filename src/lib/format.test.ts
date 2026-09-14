@@ -1,6 +1,11 @@
 import { describe, expect, it } from 'vitest';
 
-import { formatUrlLabel, formatVerified, joinNames } from '@/lib/format';
+import {
+  formatUrlLabel,
+  formatVerified,
+  formatVerifiedWindow,
+  joinNames,
+} from '@/lib/format';
 
 describe('formatUrlLabel', () => {
   it('strips the protocol and a leading www', () => {
@@ -30,6 +35,43 @@ describe('formatUrlLabel', () => {
 describe('formatVerified', () => {
   it('keeps the exact month — the precision is the point', () => {
     expect(formatVerified('2026-08')).toBe('Verified 2026-08');
+  });
+});
+
+describe('formatVerifiedWindow', () => {
+  it('names one month when every check happened in it', () => {
+    expect(formatVerifiedWindow(['2026-08', '2026-08'])).toBe('August 2026');
+  });
+
+  it('spans the range once a check lands in another month', () => {
+    // The case that made this function exist: the lede said "August 2026" and
+    // Sugbo Rentals was verified in September.
+    expect(formatVerifiedWindow(['2026-08', '2026-09', '2026-08'])).toBe(
+      'August–September 2026',
+    );
+  });
+
+  it('repeats the year when the span crosses one', () => {
+    expect(formatVerifiedWindow(['2027-01', '2026-08'])).toBe(
+      'August 2026–January 2027',
+    );
+  });
+
+  it('sorts by date rather than by input order', () => {
+    expect(formatVerifiedWindow(['2026-12', '2026-02'])).toBe(
+      'February–December 2026',
+    );
+  });
+
+  it('ignores entries that are not YYYY-MM', () => {
+    expect(formatVerifiedWindow(['2026-08', '', 'soon', '2026-13'])).toBe(
+      'August 2026',
+    );
+  });
+
+  it('returns empty so the caller can drop the claim, not print a blank date', () => {
+    expect(formatVerifiedWindow([])).toBe('');
+    expect(formatVerifiedWindow(['never'])).toBe('');
   });
 });
 

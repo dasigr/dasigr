@@ -125,6 +125,13 @@ export interface Testimonial {
 /*    delete it — the reason is what stops it being re-added from an    */
 /*    old resume six months later.                                     */
 /* 3. `stack` lists only what was observable or is known first-hand.    */
+/*                                                                    */
+/* Sugbo Rentals (added 2026-09) is the one entry not from             */
+/* docs/projects.ts. Its `stack` is what the live site actually        */
+/* serves — `x-powered-by: Next.js` and `/_next/` chunks, Tailwind     */
+/* utility classes in the markup, `server: Vercel` — and stops there   */
+/* under rule 3. TypeScript is almost certainly in it and is           */
+/* deliberately absent: nothing observable says so.                    */
 /* ================================================================== */
 
 /* --- FEATURED — the three the portfolio leads with ---------------- */
@@ -165,6 +172,24 @@ export const featuredProjects: Project[] = [
     lastVerified: '2026-08',
   },
   {
+    slug: 'sugbo-rentals',
+    title: 'Sugbo Rentals',
+    description:
+      'A peer-to-peer car rental marketplace for Cebu. Renters book self-drive, with-driver, or bring-your-own-driver trips at all-in peso prices; verified owners run their own calendars, delivery zones, and payouts.',
+    role: 'Lead Developer',
+    involvement: 'lead',
+    stack: ['Next.js', 'React', 'Tailwind CSS', 'Vercel'],
+    thumbnailUrl: '/images/projects/sugbo-rentals.webp',
+    liveUrl: 'https://www.sugborentals.com',
+    featured: true,
+    lastVerified: '2026-09',
+  },
+];
+
+/* --- ADDITIONAL LEAD WORK — text links below the featured grid ---- */
+
+export const additionalLeadProjects: Project[] = [
+  {
     slug: 'accu-glass-products',
     title: 'Accu-Glass Products',
     description:
@@ -172,16 +197,17 @@ export const featuredProjects: Project[] = [
     role: 'Lead Developer',
     involvement: 'lead',
     stack: ['Drupal (headless)', 'Decoupled API subdomain', 'PHP', 'JSON:API'],
+    // The thumbnail above is no longer rendered: this list is text links with no
+    // image slot, so it joins the other unused paths here.
     thumbnailUrl: '/images/projects/accu-glass-products.webp',
     liveUrl: 'https://www.accuglassproducts.com',
-    featured: true,
+    // Moved out of the featured grid 2026-09 when Sugbo Rentals took the slot.
+    // Nothing is wrong with the project — its case study below is unchanged and
+    // stays publishable. It is here rather than in excludedFromPortfolio for
+    // that reason.
+    featured: false,
     lastVerified: '2026-08',
   },
-];
-
-/* --- ADDITIONAL LEAD WORK — text links below the featured grid ---- */
-
-export const additionalLeadProjects: Project[] = [
   {
     slug: 'pass-labs',
     title: 'Pass Labs',
@@ -409,7 +435,7 @@ export const allLeadProjects: Project[] = [
   ...additionalLeadProjects,
 ];
 
-export const leadProjectCount = allLeadProjects.length; // 8
+export const leadProjectCount = allLeadProjects.length; // 9 since 2026-09
 export const maintenanceClientCount = maintenanceClients.length; // 3
 
 /* ================================================================== */

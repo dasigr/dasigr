@@ -47,7 +47,7 @@
 | 🎯 **What it is** | One scrollable page (7 sections) + one statically-generated route per published case study |
 | 🧱 **Built with** | Next.js 16 App Router · React 19 · TypeScript · Tailwind · deployed on Vercel |
 | 📄 **The core mechanic** | The resume PDF is **not** downloadable. A form is the only route to it, so every request is a captured lead |
-| 📦 **Portfolio contents** | **8** lead projects (3 featured with cards, 5 as text links) · **3** maintenance clients |
+| 📦 **Portfolio contents** | **9** lead projects (3 featured with cards, 6 as text links) · **3** maintenance clients |
 | 🗣️ **Testimonials** | 4 on file, **0 publishable** — all blocked on consent. Section hides itself |
 | 📝 **Case studies** | 3 scaffolded, **0 publishable** — all blocked on owner-written content. Routes don't generate |
 | 🗓️ **Career claim** | Continuous since **Nov 2008** — 12 software engagements, no gaps, ~17.8 years |
@@ -117,7 +117,7 @@ A statically-rendered single page with hash-anchored sections, backed by one ser
 | ID | Goal | Success measure |
 |----|------|-----------------|
 | **G-1** | Present skills and work history in one continuous, scannable page | Every section reachable without a page load |
-| **G-2** | Showcase verified shipped work | 3 featured cards + 5 lead links + 3 maintenance names, **every URL returning 200** |
+| **G-2** | Showcase verified shipped work | 3 featured cards + 6 lead links + 3 maintenance names, **every URL returning 200** |
 | **G-3** | Capture recruiter contact details | Working form, server-side validation, spam protection |
 | **G-4** | Deliver the resume PDF by email on request | Email arrives < 60s of submission |
 | **G-5** | Give the owner a record of who requested the resume | Notification email per submission, with lead details and working `Reply-To` |
@@ -444,7 +444,7 @@ export const isPublishable = (c: CaseStudy) =>
 export const caseStudySlugs = publishedCaseStudies.map((c) => c.slug);  // drives generateStaticParams()
 
 // src/content/projects.ts — use these in copy, never hardcode a number
-export const leadProjectCount = allLeadProjects.length;        // 8
+export const leadProjectCount = allLeadProjects.length;        // 9
 export const maintenanceClientCount = maintenanceClients.length; // 3
 ```
 
@@ -814,9 +814,9 @@ flowchart LR
     V -->|"stale / not demonstrative"| X4["❌ 3 removed<br/>Underwood · Katli · Dr. Balance"]
     V -->|"blocked automated check"| X5["❌ 3 removed<br/>Audio Surgeon · Core Power · Jolida"]
     V -->|"site-only, unverified"| X6["❌ 4 removed<br/>A5 Project · Elex Labs · Taboan · Moalboal"]
-    V -->|"✅ verified"| K["8 lead · 3 maintenance"]
+    V -->|"✅ verified"| K["9 lead · 3 maintenance"]
     K --> F["⭐ 3 featured cards"]
-    K --> L["🔗 5 text links"]
+    K --> L["🔗 6 text links"]
     K --> M["🛠️ 3 maintenance names"]
 ```
 
@@ -828,9 +828,9 @@ flowchart LR
 |---------|------|-------|--------|------|
 | **CebuFest** | Lead Developer | Next.js · React · `next/image` · Agoda affiliate | ✅ Verified 2026-08. Strongest piece — trip-planner logic, blog authored 2026 | [cebufest.com](https://www.cebufest.com) |
 | **PV System Tek** | Lead Developer | Next.js · React · `next/image` | ✅ Verified 2026-08. Live quotation estimator sizes a system from a monthly bill | [pvsystemtek.com](https://www.pvsystemtek.com) |
-| **Accu-Glass Products** | Lead Developer | Drupal (headless) · decoupled API subdomain | ✅ Verified 2026-08. B2B UHV components, 25+ categories, quick order, distributor accounts | [accuglassproducts.com](https://www.accuglassproducts.com) |
+| **Sugbo Rentals** | Lead Developer | Next.js · React · Tailwind CSS · Vercel | ✅ Verified 2026-09. P2P car rental marketplace for Cebu — three drive modes, all-in peso pricing, host calendars and delivery zones | [sugborentals.com](https://www.sugborentals.com) |
 
-Two are Next.js, aligning the portfolio with the stack this site is built in; the third demonstrates headless Drupal at B2B scale.
+All three are Next.js, aligning the portfolio with the stack this site is built in. **Accu-Glass Products held the third slot until 2026-09**, when Sugbo Rentals replaced it; it moved down to the text-link list rather than being excluded, and its case study is untouched. The trade made the featured row stack-uniform and cost it the headless-Drupal-at-B2B-scale story, which now survives only in the case study.
 
 > ⚠️ **CebuFest URL:** the resume links `http://`. The canonical is `https://`. Fix in the PDF.
 
@@ -838,6 +838,7 @@ Two are Next.js, aligning the portfolio with the stack this site is built in; th
 
 | Project | Stack | Note |
 |---------|-------|------|
+| **Accu-Glass Products** | Drupal (headless) · decoupled API subdomain · PHP · JSON:API | Featured until 2026-09. B2B UHV components, 25+ categories, quick order, distributor accounts. Case study still published |
 | **Pass Labs** | WordPress · custom `passlab` theme · PHP | Dealer locator, product registration; assets dated 2019 |
 | **Duniway Stockroom** | Drupal · custom theme · PHP | 9 categories, cart, documents library |
 | **BGW Amplifiers** | Drupal · custom theme · PHP | Cinema-sound amplifier lines, client roster, timeline |
@@ -865,7 +866,7 @@ Kept in `excludedFromPortfolio` in `src/content/projects.ts`. The reason is the 
 | A5 Project | ❌ Owner's own freelance brand, not client work. Drupal 7, © 2018. Publishes his street address and two mobile numbers, and its "Meet the Team" lists him **four times under four roles**. *"Freelance / A5 Project" stays as the employment label — only the portfolio link is dropped* |
 | Elex Labs · Taboan · Moalboal Beach Resorts | ❌ Site-only projects, never verified |
 
-> 📌 **Recount consequence.** "11 lead + 11 maintenance" does not survive verification. The defensible figures are **8 lead and 3 maintenance**, and **the resume PDF must be updated to match** before launch — the two artifacts get read side by side.
+> 📌 **Recount consequence.** "11 lead + 11 maintenance" does not survive verification. The defensible figures are **9 lead and 3 maintenance** — 8 until Sugbo Rentals was added 2026-09 — and **the resume PDF must be updated to match** before launch; the two artifacts get read side by side. The site derives its figure from the data, so the PDF is the only copy that can now be wrong.
 
 ### 6.8 Testimonials (currently zero publishable) 🔒
 
@@ -1487,7 +1488,7 @@ Launch is blocked until all of the following pass.
 | 7 | Resume versioning | **PDF in repo** at `private/`. Requires a private repository (§11.1) |
 | 8 | Include education? | **Yes** — one plain line, low on the page (FR-4b) |
 | 9 | Which freelance entries are current? | **Only Jun 2026 – Present.** The first stint ended Jul 2011 |
-| 10 | Which projects get featured? | **CebuFest · PV System Tek · Accu-Glass Products** |
+| 10 | Which projects get featured? | **CebuFest · PV System Tek · Sugbo Rentals** *(2026-09 — Sugbo Rentals replaced Accu-Glass Products, which moved to the text-link list)* |
 | 11 | Keep the four site-only projects? | **No.** All dropped, recorded in `excludedFromPortfolio` |
 | 12 | How to handle the two employment gaps? | Both were freelance periods, now entries. Timeline continuous |
 | 13 | Which address to publish? | **`me@dasigr.com`** (§9.7) |
@@ -1556,7 +1557,7 @@ Launch is blocked until all of the following pass.
 |------|------|
 | `portfolio-spa-spec.md` (v2.3) | Superseded by this document |
 | `dasigr-portfolio-mockup.html` | Static visual mockup — "test bench" direction, non-functional |
-| `src/content/projects.ts` | 8 lead + 3 maintenance + `excludedFromPortfolio` |
+| `src/content/projects.ts` | 9 lead + 3 maintenance + `excludedFromPortfolio` |
 | `src/content/testimonials.ts` | 4 entries, all consent-blocked |
 | `src/content/case-studies.ts` | 3 scaffolds, all unpublishable |
 | `RomualdoDasigResume.pdf` | Source of truth for employment; **needs the §6.10 revisions** |

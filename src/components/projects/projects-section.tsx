@@ -8,9 +8,10 @@
 
 import { ProjectCard } from '@/components/projects/project-card';
 import { SectionHeading } from '@/components/ui/section-heading';
-import { joinNames } from '@/lib/format';
+import { formatVerifiedWindow, joinNames } from '@/lib/format';
 import {
   additionalLeadProjects,
+  allLeadProjects,
   featuredProjects,
   leadProjectCount,
   maintenanceClientCount,
@@ -25,6 +26,14 @@ export function ProjectsSection({ eyebrow }: ProjectsSectionProps) {
   const ongoing = maintenanceClients.filter((c) => c.status === 'ongoing');
   const previous = maintenanceClients.filter((c) => c.status === 'previous');
 
+  // Read off the entries themselves. Naming a month in prose was the one claim in
+  // this section that could still go stale without anyone noticing, and it did as
+  // soon as a project was verified outside August.
+  const verifiedWindow = formatVerifiedWindow([
+    ...allLeadProjects.map((p) => p.lastVerified),
+    ...maintenanceClients.map((c) => c.lastVerified),
+  ]);
+
   return (
     <section
       id="projects"
@@ -35,7 +44,7 @@ export function ProjectsSection({ eyebrow }: ProjectsSectionProps) {
         <SectionHeading
           headingId="projects-heading"
           eyebrow={eyebrow}
-          lede="Every URL verified August 2026. Sites that died, were rebuilt by someone else, or no longer show my work were removed rather than left to fail a click."
+          lede={`Every URL verified${verifiedWindow ? ` ${verifiedWindow}` : ''}. Sites that died, were rebuilt by someone else, or no longer show my work were removed rather than left to fail a click.`}
         >
           {leadProjectCount} sites led · {maintenanceClientCount} clients
           maintained
