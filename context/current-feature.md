@@ -1,48 +1,82 @@
 # Current Feature
 
-## Sugbo Rentals Replaces Accu-Glass in the Featured Grid
-
 ## Status
 
-In Progress — awaiting owner confirmation of the Sugbo Rentals copy and stack,
-then commit.
+Not Started
 
 ## Goals
 
-- `featuredProjects` leads with CebuFest · PV System Tek · **Sugbo Rentals**.
-- **Accu-Glass Products is not lost** — it moves down to `additionalLeadProjects`
-  as a text link, keeps its live URL, and keeps its case study. It is *not* an
-  `excludedFromPortfolio` entry: nothing is wrong with it.
-- `www.sugborentals.com` verified live before the entry is written (rule 1), and
-  its `stack` names only what the response actually proves (rule 3).
-- An 800×600 WebP thumbnail exists at the path the entry names, so the card
-  renders `next/image` rather than "Screenshot pending".
-- `npm run test`, `npm run lint` and `npm run build` all clean; the page verified
-  in the browser at 1280 and 390.
+<!-- What success looks like, as bullet points. -->
 
 ## Notes
 
-- **`leadProjectCount` goes 8 → 9.** The Projects heading, §14.1 Q10, the G-2
-  row, the §6.7 recount note and the portfolio-contents row in the spec all
-  carried 8 / "5 text links" and were updated. The site's own copy is derived, so
-  only the prose and the resume PDF could go stale.
-- The resume PDF still says 8/3 (§6.10). This change widens that gap by one and
-  does not close it — an ODT edit, not a code change.
-- `caseStudies['accu-glass-products']` is untouched and still publishable. No
-  route exists at `/projects/[slug]` yet, so nothing renders either way.
-- The Accu-Glass thumbnail stays in `public/` and stops being rendered:
-  `additionalLeadProjects` is a text-link list with no image slot, which is
-  already true of the five paths beside it.
-- **The lede had to stop naming a month.** "Every URL verified August 2026" was
-  the last hardcoded claim in the section, and a 2026-09 entry made it false.
-  `formatVerifiedWindow()` now reads the window off `lastVerified` — it renders
-  "August–September 2026" today, one month if they ever converge, and returns ""
-  so the caller can drop the sentence rather than print a blank date. 6 new tests
-  (152 total).
-- The thumbnail was captured at 1280×960 and resized to 800×600 — exactly 4:3,
-  so a pure resize with no crop, the same method as the first three.
+<!-- Context, constraints, or details from the spec. -->
 
 ## History
+
+### Sugbo Rentals Replaces Accu-Glass in the Featured Grid — completed 2026-09-14
+
+Sugbo Rentals took the third featured slot. **Accu-Glass Products was not
+dropped** — it moved down to `additionalLeadProjects` as the first text link,
+keeping its live URL and its case study. `excludedFromPortfolio` was the wrong
+home for it: that list is for entries that fail a click, and this one passes.
+The featured row is now three Next.js builds, which costs the portfolio its
+headless-Drupal-at-B2B-scale story on the front page; the case study is where
+that survives.
+
+`www.sugborentals.com` was verified live before the entry was written (rule 1)
+and **its `stack` names only what the response proves** — `x-powered-by: Next.js`
+and `/_next/` chunks, Tailwind utility classes in the markup, `server: Vercel`.
+TypeScript is almost certainly in it and is deliberately absent under rule 3,
+recorded in the file header so nobody reads the omission as an oversight. The
+description was written from the live site and covers what the marketplace
+actually does: three drive modes, all-in peso pricing, host calendars, delivery
+zones, payouts.
+
+**Two things the swap dragged with it, and the second is the interesting one.**
+
+`leadProjectCount` went 8 → 9. The heading derives it, so the site followed with
+no edit — the derivation earning its keep for the third feature running. The
+spec's *prose* copies of the number did not: Q10, the G-2 row, the
+portfolio-contents row, the flowchart and the §6.7 recount note all said 8 and
+"5 text links", and were updated by hand.
+
+And the lede said **"Every URL verified August 2026."** A 2026-09 entry made that
+false. It was the last hardcoded claim left in the section, sitting in the one
+sentence whose whole job is to assert that the URLs were checked.
+`formatVerifiedWindow()` now reads the window off `lastVerified` — "August–September
+2026" today, a single month if they ever converge, a year on each end if the span
+crosses one, and `""` so the caller can drop the sentence rather than print a
+date-shaped blank. 6 new tests, 152 total. Worth noting for next time: the
+derived-counts rule was written for numbers, and a **date in prose drifts exactly
+the same way.**
+
+Thumbnail captured at 1280×960 and resized to 800×600 — exactly 4:3, a pure
+resize with no crop, the same method and the same `sharp` q=82 as the first
+three. 35 KB. No component changed: `publicAssetExists()` switched the card to
+`next/image` on its own.
+
+152 tests pass, lint clean, build clean. Browser-verified at 1280 and 390: all
+three cards render `<Image>` with `complete: true` and the right alt text, 4:3
+held (345×258 desktop, 333×250 mobile), the lede reads "August–September 2026",
+Accu-Glass leads the text-link list, and no horizontal overflow at either width.
+
+**Carried forward — not done in this feature:**
+
+- **The resume PDF says 8/3 and the site now says 9/3.** This change widened
+  that gap by one rather than closing it. §6.10's recount row is an ODT edit.
+- **The Sugbo Rentals `stack` may be under-stating the build.** TypeScript, the
+  database and the payment provider are all absent because nothing observable
+  named them. One sentence from the owner closes it; rule 3 is why it was not
+  guessed.
+- **No case study at `/projects/sugbo-rentals`** — owner's call. The project
+  ships as a card with a live link, which is the state FR-5 expects.
+- **`caseStudies['accu-glass-products']` is still publishable and still
+  unreachable.** `/projects/[slug]` does not exist yet, so the move changed
+  nothing about it either way.
+- **The Accu-Glass thumbnail is now an unused file**, joining the five paths
+  already unused beside it — `additionalLeadProjects` has no image slot.
+- **`public/romualdo-dasig-portrait.jpg` is still 5.5 MB.** Untouched again.
 
 ### Current Role Sync & PDF Re-export — completed 2026-08-30
 
