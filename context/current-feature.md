@@ -1,16 +1,116 @@
 # Current Feature
 
+## Spam Protection — Cloudflare Turnstile
+
 ## Status
 
-Not Started
+In Progress — started 2026-09-17
+
+Full specification: [context/features/turnstile-spec.md](features/turnstile-spec.md).
+That file is the implementation contract; this section is the working summary.
 
 ## Goals
 
-<!-- What success looks like, as bullet points. -->
+- A submission without a valid, unspent, correctly-scoped Turnstile token cannot cause
+  a Resend call. This is the point of the feature — the honeypot stops the bot that
+  fills every input, and nothing currently stops one that posts JSON directly.
+- §8's `403` row returns, exactly: `{"success": false, "error": "Captcha verification failed"}`.
+- All four conjuncts checked server-side: `success`, `action`, `hostname`, and a
+  non-empty hostname allowlist.
+- Replay of a spent token rejected, **demonstrated with curl**, not asserted.
+- The honeypot's §8 identical-response parity survives unchanged.
+- No new `'use client'` boundary; First Load JS for `/` unchanged within noise.
+- Every comment claiming Turnstile is deferred corrected in the same change.
 
 ## Notes
 
-<!-- Context, constraints, or details from the spec. -->
+**The widget already exists** — created in the Cloudflare dashboard, site key
+`0x4AAAAAAE5mCjF_G1_wRd6g`. Following the Turnstile Spin **existing-widget flow**, which
+means the creation wizard does not run and neither does its guarded Wrangler secret
+retrieval: the secret is already in `.env`, and `.env*` is gitignored. What survives
+from that flow is step 8 — wire it, then validate against the real backend with a fresh
+token and prove replay rejection.
+
+**Order is FR-7's:** after Zod, before the honeypot. A malformed payload must still get
+its `400` regardless of the captcha, or the response becomes a probe. Consequence: a
+real bot will now rarely reach the honeypot. It stays — free, defence in depth, and its
+parity tests are what keep §8's "identical response" guarantee honest.
+
+**`captchaToken` is optional in the shared schema and enforced in the route**, mirroring
+how `_website` is accepted by the schema and judged by `spam.ts`. Making it required
+turns a missing token into a `400` naming a field the form draws no `<FieldError>` for,
+and §8 already gives captcha failure its own status code.
+
+**Explicit render is mandatory, not a preference.** Tokens are single-use and this form
+stays mounted after 400/403/500/offline, so the widget id must be retained and
+`turnstile.reset()` called after every completed request.
+
+**Decided 2026-09-17: fail closed everywhere.** Missing secret, empty hostname
+allowlist, or an unreachable siteverify all return `403`. The narrower "fail open only
+when Cloudflare is down" variant was offered and declined. This is only acceptable
+because the loss is not silent — the `403` lands in the form's visible error state with
+the `mailto:` fallback on screen.
+
+**Before merging, confirm in the Cloudflare dashboard** that the widget's domain list
+contains `localhost` and `www.dasigr.com`. `TURNSTILE_HOSTNAMES` is currently
+`localhost` only, which is correct for local and wrong for production.
+
+Preview deployments will `403` — Turnstile validates a fixed domain list and Vercel
+preview URLs are generated per deploy. Accepted (spec §10.3, option 1).
+
+## Verification (2026-09-17)
+
+198 tests (31 new), lint clean, build clean. Browser-verified at 1280 and 390.
+
+**Bundle: +2.5 KB gzipped.** `main` measures 192.3 KB, this branch 194.8 KB, summed
+from gzipped `.next/static/chunks/*.js` via a worktree with a copied `node_modules`
+(Next 16 with Turbopack still prints no First Load JS figure). ⚠️ The 176.7 KB baseline
+recorded in the Resume Request entry is stale — five features have landed since, and
+current `main` is 192.3 KB. `api.js` is third-party and does not appear in that figure
+at all; the 2.5 KB is the widget lifecycle code.
+
+**What the dev log proved, in the order it proved it:**
+
+- Fresh real token + **filled honeypot** → `200`, nothing sent. Turnstile runs before
+  the honeypot, and §8's identical-response parity survives the new check.
+- **The same token replayed** → `403`, `codes=timeout-or-duplicate`. Single-use
+  redemption demonstrated, not assumed. This is Spin step 8's requirement.
+- Allowlist forced to `example.com`, fresh real token → `403` with
+  **`success=true action=contact hostname=localhost codes=(none)`**. Cloudflare said
+  yes and the route said no. Hostname validation is genuinely wired and is not
+  redundant with `success` — no other check in the suite proves that.
+- Empty `TURNSTILE_HOSTNAMES`, then empty `TURNSTILE_SECRET_KEY` → `403` each, with the
+  loud config error in the log. Fail closed, as decided.
+- No token → `403`, and the client makes **no request at all** (verified via
+  `performance.getEntriesByType`).
+- Bad email + token → `400`. Validation still wins. `GET` → `405`.
+- Three real end-to-end sends, `resumeSent` both `true` and `false`.
+
+**Two defects were found by the browser and fixed, both invisible to the test suite:**
+
+1. **The widget silently failed to render on some loads.** `?onload=` on the api.js URL
+   and next/script's `onReady` are both races — api.js can invoke its onload global
+   before React assigns it, and `onReady` can fire before `window.turnstile` is
+   defined. Either way the widget never appears and every submission 403s with nothing
+   on screen to explain it. Replaced with a 100 ms poll for `window.turnstile.render`,
+   which asks the only question that matters and cannot be beaten to it. It gives up
+   after 15 s with a message rather than leaving the reader pressing Send at a blank.
+2. **Cloudflare logged "Cannot find Widget … consider using turnstile.remove()"** after
+   every success. React detaches the form's subtree before passive effect cleanups run,
+   so `remove()` in the cleanup always arrived too late. Guarding the cleanup did not
+   help — the warning is Cloudflare noticing its DOM vanished untorn-down. The fix is
+   `teardownCaptcha()` called *before* `setStatus('success')`, while the container is
+   still attached. Console now clean across three successful sends.
+
+The 403 client branch was exercised with a stubbed response (Cloudflare had escalated
+the automated browser to an interactive challenge by then, which is the control
+working): form stays mounted with values intact, distinct copy rather than the generic
+"that did not go through", `mailto:` fallback carrying the reader's own message, and
+the widget reset from a 752-character token to empty.
+
+At 390 px the widget renders `flexible` and the document is 378 px wide — no horizontal
+overflow. FR-7a intact: the only resume-ish `href` in the served markup is the
+`mailto:` fallback.
 
 ## History
 
