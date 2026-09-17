@@ -1,9 +1,17 @@
 /**
  * src/lib/spam.ts
  *
- * The honeypot decision for `POST /api/contact` — §8's third spam control, and the
- * only one implemented. Turnstile (403) and the Upstash rate limit (429) are still
- * deferred; nothing here returns or implies either.
+ * The honeypot decision for `POST /api/contact` — §8's third spam control. Cloudflare
+ * Turnstile (403) now runs ahead of it in the route; the Upstash rate limit (429) is
+ * still deferred. Nothing here knows about either, and that is deliberate: this
+ * module's whole job is the §8 parity below, and coupling it to another control is
+ * how that parity acquires a second way to break.
+ *
+ * Note what Turnstile did to this control's reach rather than to its code: a bot
+ * without a solved token never gets past the 403, so the honeypot is now rarely the
+ * thing that catches anything. It stays because it is free, because it catches the
+ * naive browser-driving bot that solves the challenge and then fills every input, and
+ * because its tests are what keep §8's identical-response rule honest.
  *
  * WHY THIS IS A MODULE AND NOT TWO LINES IN THE ROUTE: §8's requirement is not
  * "drop the submission", it is "drop it and answer exactly as if you had not".

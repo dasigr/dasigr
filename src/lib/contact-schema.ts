@@ -83,6 +83,23 @@ export const contactSchema = z.object({
   }),
 
   /**
+   * The Turnstile token, named as §8's request body names it. The value it carries is
+   * the widget's `cf-turnstile-response`; this is a JSON API, not a form POST, so the
+   * spec's name wins over Cloudflare's field name.
+   *
+   * Accepted here and judged elsewhere, exactly like `_website` below: src/lib/turnstile.ts
+   * and the route own it, and a failure is §8's 403 rather than a 400.
+   *
+   * ⚠️ DO NOT MAKE THIS REQUIRED. Two things break. A missing token would return a 400
+   * whose body names `captchaToken` — a field the form draws no `<FieldError>` for — so
+   * the user would get the generic failure state for a cause the response had already
+   * described wrongly, and §8's 403 row would become unreachable. And the form runs this
+   * schema on every keystroke, long before any token exists, so the form would report
+   * itself invalid for its entire life.
+   */
+  captchaToken: z.optional(z.string()),
+
+  /**
    * Honeypot. Accepted here and judged elsewhere — `decideContactDelivery` in
    * src/lib/spam.ts is what drops the submission, and the route calls it after this
    * schema has passed.
