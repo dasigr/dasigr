@@ -1,16 +1,72 @@
-# Current Feature
+# Current Feature: Spam Protection — Honeypot
 
 ## Status
 
-Not Started
+In Progress
 
 ## Goals
 
-<!-- What success looks like, as bullet points. -->
+- `POST /api/contact` rejects a submission whose `_website` honeypot is filled:
+  no PDF read, no Resend call, no lead notification.
+- **The rejection is byte-identical to a success** (§8): status `200`, body
+  `{ "success": true, "resumeSent": <what the submission asked for> }`, same
+  headers. A bot must not be able to tell it was caught.
+- The decision lives in `src/lib/` as a pure function, not inline in the route,
+  and is covered by Vitest — including the identical-response requirement, which
+  is the part a future refactor can silently break.
+- The three source comments that currently say the check is **not** implemented
+  (`route.ts` header, `contact-form.tsx` header + honeypot markup,
+  `contact-schema.ts` `_website`) are corrected in the same change, so nothing in
+  the tree still tells the next reader the field is decorative.
+- Verified end-to-end: a `curl` with `_website` filled returns the success body
+  and sends nothing; a normal submission still delivers both emails.
+- `npm run test`, `npm run lint`, `npm run build` all pass.
 
 ## Notes
 
-<!-- Context, constraints, or details from the spec. -->
+**Scope is the honeypot only.** §8 names three spam controls — Turnstile (403),
+the Upstash rate limit (429), and the honeypot. This feature is the third one.
+`403` and `429` stay reserved and unreturned; `captchaToken` is not added to the
+schema. The honeypot is the one control that needs no third-party account, no new
+env var, and no bundle cost, which is why it goes first.
+
+**The field already exists and is already wired.** `contact-form.tsx:294-311`
+renders `_website` off-screen (`-left-[9999px]`, not `display:none` — a bot that
+reads styles skips hidden fields but fills one it can "see"), sends it, and
+`contactSchema` accepts it as `z.optional(z.string())`. **Do not change it to
+`maxLength(0)`** — a 400 on a filled honeypot is exactly the tell §8 forbids. The
+schema keeps accepting it; the route decides what to do with it.
+
+**Identical means identical, including `resumeSent`.** The success body varies
+(`resumeSent: true | false` by what the submitter ticked). A rejection that always
+returns `true` is distinguishable to any bot that submits with the box unticked.
+Mirror the parsed `requestResume` value.
+
+**Where the check sits in the order matters.** §8's FR-7 diagram puts the honeypot
+after validation. Since the schema accepts `_website`, validation can still return
+a `400` to a bot that also sent a bad email — decide deliberately whether a tripped
+honeypot short-circuits ahead of validation, and record the reasoning. Timing is
+also a weak tell: the rejection returns without two Resend round-trips, so it is
+measurably faster. Note it; do not build fake latency for it.
+
+**Treat whitespace as empty.** A trimmed-empty `_website` is not a trip — browser
+autofill and password managers can put junk in a field a human never saw, and a
+false positive here is a silently lost recruiter lead, which FR-7a calls worse
+than no gate.
+
+**Log the rejection server-side.** The bot sees success; the owner needs to see
+that mail was suppressed, or a misfiring honeypot looks like zero inbound traffic.
+Match the existing `console.info('[contact] …')` style in the route.
+
+**Carried forward from the last contact feature and still true after this one:**
+the route still has no rate limit and no captcha, so the Resend quota is still
+reachable by anything that can POST valid JSON with an empty `_website`; and when
+the limit does land, **do not use a module-level `Map`** — §8 warns each invocation
+may be a fresh instance.
+
+Testing follows CLAUDE.md: `src/lib/*.test.ts` only, `environment: "node"` — the
+route handler itself is not unit-tested, so the logic has to leave the route to be
+testable at all.
 
 ## History
 

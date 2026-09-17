@@ -2,13 +2,16 @@
  * POST /api/contact — FR-7. The only route by which the resume PDF leaves this app.
  *
  * Implements the §8 contract for the outcomes this feature covers: 200 (sent),
- * 200 (resume box unticked), 400 (validation), 500 (provider or filesystem).
- * 403 and 429 are reserved and unused — Turnstile and the Upstash rate limit are
- * deliberately deferred (see context/current-feature.md).
+ * 200 (resume box unticked), 200 (honeypot tripped — identical body, nothing sent),
+ * 400 (validation), 500 (provider or filesystem). 403 and 429 are reserved and
+ * unused — Turnstile and the Upstash rate limit are deliberately deferred (see
+ * context/current-feature.md).
  *
- * ⚠️ THIS ROUTE HAS NO SPAM PROTECTION. Anything that can POST JSON can make it
- * send mail. The exposure is the Resend quota and sender reputation, not the PDF,
- * which is forwardable by design (FR-7a). Turnstile is the next feature.
+ * ⚠️ THE HONEYPOT IS THE ONLY SPAM CONTROL HERE. It stops the naive bot that fills
+ * every input; it does nothing about one that posts JSON directly with `_website`
+ * empty. The exposure that leaves is the Resend quota and sender reputation, not
+ * the PDF, which is forwardable by design (FR-7a). Turnstile and the rate limit are
+ * still the next features.
  *
  * Chosen as a Route Handler rather than a Server Action because §8 specifies exact
  * status codes and FR-7's sequence diagram is written against HTTP. A Server Action
@@ -26,6 +29,7 @@ import {
 } from '@/lib/contact-email';
 import { CONTACT_LIMITS, parseContact } from '@/lib/contact-schema';
 import { readResumeFile, resumeExists } from '@/lib/resume';
+import { decideContactDelivery, describeHoneypotValue } from '@/lib/spam';
 import { profile } from '@/content/profile';
 
 /**
@@ -52,6 +56,11 @@ const RESPONSES = {
       { success: false, error: 'Unable to send. Please email directly.' },
       { status: 500 },
     ),
+  /**
+   * The ONLY 200 in this file, and it has to stay that way. A caught bot and a
+   * delivered lead both leave through this line, which is what makes §8's
+   * "the response must not differ" structural rather than a promise in a comment.
+   */
   accepted: (resumeSent: boolean) =>
     Response.json({ success: true, resumeSent }, { status: 200 }),
 } as const;
@@ -78,6 +87,35 @@ export async function POST(request: Request): Promise<Response> {
   const parsed = parseContact(payload);
   if (!parsed.success) {
     return RESPONSES.validation(parsed.errors as Record<string, string>);
+  }
+
+  /**
+   * §8's silent bot rejection. After validation (§8's own order, and the order that
+   * leaks least — see the note in spam.ts) but before anything that costs: no PDF
+   * read, no Resend client, no mail. The one observable difference left is timing,
+   * since this answers without two provider round-trips. That is a weak tell and the
+   * cure — padding the response with fake latency — buys nothing against a bot that
+   * is not timing us and costs a real recruiter nothing but the wait.
+   *
+   * Note `disposition.resumeSent`, not a fresh literal: the rejection reports what
+   * the submitter asked for, through the same helper as a real send.
+   *
+   * Sitting above the env check and the PDF read does leave one differential: with
+   * RESEND_API_KEY unset or the PDF missing from the bundle, a caught bot still gets
+   * its 200 while a real submission gets a 500. Accepted knowingly — that state is
+   * one where every legitimate lead is already being lost, and the alternative is
+   * reading a 194 KB file off disk for every spam hit, which is the cost the
+   * honeypot exists to avoid.
+   */
+  const disposition = decideContactDelivery(parsed.data);
+  if (!disposition.deliver) {
+    console.info(
+      '[contact] Honeypot tripped by %s in %dms — nothing sent (_website: %s)',
+      parsed.data.email,
+      Date.now() - startedAt,
+      describeHoneypotValue(parsed.data._website),
+    );
+    return RESPONSES.accepted(disposition.resumeSent);
   }
 
   const submission: ContactSubmission = {
@@ -171,5 +209,6 @@ export async function POST(request: Request): Promise<Response> {
     submission.requestResume,
   );
 
-  return RESPONSES.accepted(submission.requestResume);
+  // Same value, same helper, same line of reasoning as the rejection above.
+  return RESPONSES.accepted(disposition.resumeSent);
 }

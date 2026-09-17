@@ -11,9 +11,11 @@
  *
  * Three details in here are the contract rather than styling:
  *   - the resume checkbox is CHECKED by default, consent is NOT (FR-6 / §9.5);
- *   - `_website` is a honeypot whose server-side rejection IS NOT IMPLEMENTED in
- *     this feature. It is sent and ignored. Do not read the field's presence as
- *     protection — the route currently has none;
+ *   - `_website` is a honeypot and it is live: the route drops any submission that
+ *     comes back with it filled, answering with a body identical to a success (§8).
+ *     It must therefore stay empty, stay out of the tab order, and stay unlabelled
+ *     to assistive tech — a sighted or screen-reader user who fills it loses their
+ *     message with a confirmation on screen;
  *   - client validation is UX only. `parseContact` runs again in the route handler
  *     and that run is the control (§8).
  */
@@ -291,9 +293,11 @@ export function ContactForm() {
         <FieldError id="contact-message-error" message={errorFor('message')} />
       </div>
 
-      {/* Honeypot. Off-screen rather than display:none — a bot that reads styles
-          skips hidden fields, but happily fills one it can "see". Sent to the
-          server and IGNORED there for now; the check is deferred, not silent. */}
+      {/* Honeypot, and it is armed: a filled `_website` makes the route discard the
+          submission and answer as though it had sent it (§8). Off-screen rather than
+          display:none — a bot that reads styles skips hidden fields, but happily
+          fills one it can "see". `aria-hidden` plus `tabIndex={-1}` plus
+          `autoComplete="off"` are what keep a real person from ever reaching it. */}
       <div
         aria-hidden="true"
         className="absolute -left-[9999px] size-px overflow-hidden"

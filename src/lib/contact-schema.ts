@@ -83,11 +83,14 @@ export const contactSchema = z.object({
   }),
 
   /**
-   * Honeypot. Accepted and IGNORED — the rejection is not implemented in this
-   * feature (see context/current-feature.md). It is typed as an optional string
-   * rather than `maxLength(0)` on purpose: rejecting a filled honeypot with a 400
-   * would be its own tell, and §8's requirement is that a caught bot sees a
-   * response identical to success.
+   * Honeypot. Accepted here and judged elsewhere — `decideContactDelivery` in
+   * src/lib/spam.ts is what drops the submission, and the route calls it after this
+   * schema has passed.
+   *
+   * ⚠️ DO NOT TIGHTEN THIS TO `maxLength(0)`. It is the obvious change and it breaks
+   * the feature: a 400 naming `_website` tells the bot exactly which field caught it,
+   * where §8 requires a caught bot to see a response identical to success. The schema
+   * must keep accepting any string for the rejection to stay silent.
    */
   _website: z.optional(z.string()),
 });

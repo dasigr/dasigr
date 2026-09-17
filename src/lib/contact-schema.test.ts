@@ -181,10 +181,12 @@ describe('parseContact — consent is the gate', () => {
   });
 });
 
-describe('parseContact — the honeypot is accepted and ignored', () => {
-  // The rejection is deliberately not implemented in this feature. What matters
-  // here is that a filled honeypot does NOT produce a 400: an error would be its
-  // own tell, and §8 requires a caught bot to see a response identical to success.
+describe('parseContact — the honeypot passes validation and is judged later', () => {
+  // The drop happens in src/lib/spam.ts, after this schema has passed. What matters
+  // here is that a filled honeypot does NOT produce a 400: an error naming
+  // `_website` would tell the bot which field caught it, and §8 requires a caught
+  // bot to see a response identical to success. Tightening this to `maxLength(0)`
+  // is what these two tests exist to stop.
   it('accepts a filled _website', () => {
     expect(
       parseContact(submission({ _website: 'https://spam.example' })).success,
