@@ -1,118 +1,125 @@
 # Current Feature
 
-## Spam Protection — Cloudflare Turnstile
-
 ## Status
 
-In Progress — started 2026-09-17
-
-Full specification: [context/features/turnstile-spec.md](features/turnstile-spec.md).
-That file is the implementation contract; this section is the working summary.
+Not Started
 
 ## Goals
 
-- A submission without a valid, unspent, correctly-scoped Turnstile token cannot cause
-  a Resend call. This is the point of the feature — the honeypot stops the bot that
-  fills every input, and nothing currently stops one that posts JSON directly.
-- §8's `403` row returns, exactly: `{"success": false, "error": "Captcha verification failed"}`.
-- All four conjuncts checked server-side: `success`, `action`, `hostname`, and a
-  non-empty hostname allowlist.
-- Replay of a spent token rejected, **demonstrated with curl**, not asserted.
-- The honeypot's §8 identical-response parity survives unchanged.
-- No new `'use client'` boundary; First Load JS for `/` unchanged within noise.
-- Every comment claiming Turnstile is deferred corrected in the same change.
+<!-- What success looks like, as bullet points. -->
 
 ## Notes
 
-**The widget already exists** — created in the Cloudflare dashboard, site key
-`0x4AAAAAAE5mCjF_G1_wRd6g`. Following the Turnstile Spin **existing-widget flow**, which
-means the creation wizard does not run and neither does its guarded Wrangler secret
-retrieval: the secret is already in `.env`, and `.env*` is gitignored. What survives
-from that flow is step 8 — wire it, then validate against the real backend with a fresh
-token and prove replay rejection.
-
-**Order is FR-7's:** after Zod, before the honeypot. A malformed payload must still get
-its `400` regardless of the captcha, or the response becomes a probe. Consequence: a
-real bot will now rarely reach the honeypot. It stays — free, defence in depth, and its
-parity tests are what keep §8's "identical response" guarantee honest.
-
-**`captchaToken` is optional in the shared schema and enforced in the route**, mirroring
-how `_website` is accepted by the schema and judged by `spam.ts`. Making it required
-turns a missing token into a `400` naming a field the form draws no `<FieldError>` for,
-and §8 already gives captcha failure its own status code.
-
-**Explicit render is mandatory, not a preference.** Tokens are single-use and this form
-stays mounted after 400/403/500/offline, so the widget id must be retained and
-`turnstile.reset()` called after every completed request.
-
-**Decided 2026-09-17: fail closed everywhere.** Missing secret, empty hostname
-allowlist, or an unreachable siteverify all return `403`. The narrower "fail open only
-when Cloudflare is down" variant was offered and declined. This is only acceptable
-because the loss is not silent — the `403` lands in the form's visible error state with
-the `mailto:` fallback on screen.
-
-**Before merging, confirm in the Cloudflare dashboard** that the widget's domain list
-contains `localhost` and `www.dasigr.com`. `TURNSTILE_HOSTNAMES` is currently
-`localhost` only, which is correct for local and wrong for production.
-
-Preview deployments will `403` — Turnstile validates a fixed domain list and Vercel
-preview URLs are generated per deploy. Accepted (spec §10.3, option 1).
-
-## Verification (2026-09-17)
-
-198 tests (31 new), lint clean, build clean. Browser-verified at 1280 and 390.
-
-**Bundle: +2.5 KB gzipped.** `main` measures 192.3 KB, this branch 194.8 KB, summed
-from gzipped `.next/static/chunks/*.js` via a worktree with a copied `node_modules`
-(Next 16 with Turbopack still prints no First Load JS figure). ⚠️ The 176.7 KB baseline
-recorded in the Resume Request entry is stale — five features have landed since, and
-current `main` is 192.3 KB. `api.js` is third-party and does not appear in that figure
-at all; the 2.5 KB is the widget lifecycle code.
-
-**What the dev log proved, in the order it proved it:**
-
-- Fresh real token + **filled honeypot** → `200`, nothing sent. Turnstile runs before
-  the honeypot, and §8's identical-response parity survives the new check.
-- **The same token replayed** → `403`, `codes=timeout-or-duplicate`. Single-use
-  redemption demonstrated, not assumed. This is Spin step 8's requirement.
-- Allowlist forced to `example.com`, fresh real token → `403` with
-  **`success=true action=contact hostname=localhost codes=(none)`**. Cloudflare said
-  yes and the route said no. Hostname validation is genuinely wired and is not
-  redundant with `success` — no other check in the suite proves that.
-- Empty `TURNSTILE_HOSTNAMES`, then empty `TURNSTILE_SECRET_KEY` → `403` each, with the
-  loud config error in the log. Fail closed, as decided.
-- No token → `403`, and the client makes **no request at all** (verified via
-  `performance.getEntriesByType`).
-- Bad email + token → `400`. Validation still wins. `GET` → `405`.
-- Three real end-to-end sends, `resumeSent` both `true` and `false`.
-
-**Two defects were found by the browser and fixed, both invisible to the test suite:**
-
-1. **The widget silently failed to render on some loads.** `?onload=` on the api.js URL
-   and next/script's `onReady` are both races — api.js can invoke its onload global
-   before React assigns it, and `onReady` can fire before `window.turnstile` is
-   defined. Either way the widget never appears and every submission 403s with nothing
-   on screen to explain it. Replaced with a 100 ms poll for `window.turnstile.render`,
-   which asks the only question that matters and cannot be beaten to it. It gives up
-   after 15 s with a message rather than leaving the reader pressing Send at a blank.
-2. **Cloudflare logged "Cannot find Widget … consider using turnstile.remove()"** after
-   every success. React detaches the form's subtree before passive effect cleanups run,
-   so `remove()` in the cleanup always arrived too late. Guarding the cleanup did not
-   help — the warning is Cloudflare noticing its DOM vanished untorn-down. The fix is
-   `teardownCaptcha()` called *before* `setStatus('success')`, while the container is
-   still attached. Console now clean across three successful sends.
-
-The 403 client branch was exercised with a stubbed response (Cloudflare had escalated
-the automated browser to an interactive challenge by then, which is the control
-working): form stays mounted with values intact, distinct copy rather than the generic
-"that did not go through", `mailto:` fallback carrying the reader's own message, and
-the widget reset from a 752-character token to empty.
-
-At 390 px the widget renders `flexible` and the document is 378 px wide — no horizontal
-overflow. FR-7a intact: the only resume-ish `href` in the served markup is the
-`mailto:` fallback.
+<!-- Context, constraints, or details from the spec. -->
 
 ## History
+
+### Spam Protection — Cloudflare Turnstile — completed 2026-09-17
+
+The route had one spam control and it only caught the bot that fills every input.
+Anything posting JSON directly with `_website` empty reached Resend. §8's `403` row
+now returns, and a submission without a valid, unspent, correctly-scoped token cannot
+cause a send. Specified first in [context/features/turnstile-spec.md](features/turnstile-spec.md)
+— the first file under `context/features/`, and the implementation contract this entry
+reports against.
+
+**The widget already existed**, so this followed the Turnstile Spin *existing-widget*
+flow. Most of that flow — the Wrangler retrieval, the write manifest, the guarded
+`secret put` subshell — exists to move a secret out of Cloudflare without it touching
+chat, a log, or a command argument, and **that problem was already solved**: the secret
+was in `.env`, and `.env*` is gitignored. What actually survived was its step 8, wire
+it and then *prove* it, which is the half worth having.
+
+**The decision is `src/lib/turnstile.ts`, not four lines in the route**, for the same
+reason `spam.ts` exists and more so: it has four conjuncts and three of them are easy
+to drop with nothing failing. The route is also the one file the Vitest glob cannot
+see. 31 tests pin it, one per conjunct, and **the one that matters most in production
+is the empty-allowlist case** — an unset `TURNSTILE_HOSTNAMES` must accept *nothing*
+rather than everything, and it is exactly the guard a tidying refactor deletes as
+redundant.
+
+**Order is FR-7's: after Zod, before the honeypot.** After Zod because a malformed
+payload must still get its `400` whatever the captcha says, or the status code becomes
+a probe. The consequence is worth recording: **a real bot will now rarely reach the
+honeypot.** It stays anyway — it is free, it catches the browser-driving bot that
+solves the challenge and then fills every input, and its parity tests are what keep
+§8's identical-response rule honest. `spam.ts` did not change; only its header comment.
+
+`captchaToken` is **optional in the shared schema and enforced in the route**,
+mirroring how `_website` is accepted by the schema and judged elsewhere. Required
+would turn a missing token into a `400` naming a field the form draws no
+`<FieldError>` for, and would make §8's own `403` row unreachable.
+
+**Fails closed everywhere** — missing secret, empty allowlist, unreachable siteverify
+(owner's decision; the narrower "fail open only when Cloudflare is down" variant was
+offered and declined). That is only defensible because the loss is **not silent**: the
+`403` lands in the form's visible error state, and it has its own copy rather than the
+generic "that did not go through, email me directly", which blames the server for
+something the reader can simply retry. The `mailto:` fallback stays on that branch
+too — if Turnstile is blocked on their network, retrying never works.
+
+**Three things the dev log proved rather than asserted.** A fresh real token with the
+honeypot filled returned `200` with nothing sent, then **the same token replayed
+returned `403 timeout-or-duplicate`** — one exchange proving both single-use redemption
+and the control ordering. With the allowlist forced to `example.com`, a real token
+logged **`success=true action=contact hostname=localhost codes=(none)`** and was
+rejected anyway: Cloudflare said yes and the route said no, which is the only check
+that proves hostname validation is wired and not redundant with `success`. And an empty
+secret, then an empty allowlist, each `403`d with the loud config error.
+
+**Two defects were found by the browser and neither was visible to the test suite.**
+The widget *silently failed to render on some loads*: `?onload=` on the api.js URL and
+next/script's `onReady` are both races — api.js invokes its onload global the moment it
+initialises, which can precede React assigning it, and `onReady` can fire before
+`window.turnstile` exists. Losing either leaves the widget absent and every submission
+403ing with nothing on screen to explain it. It now polls for `window.turnstile.render`
+every 100 ms and gives up after 15 s with a message. Separately, Cloudflare logged
+*"Cannot find Widget … consider using turnstile.remove()"* after every success: React
+detaches the form's subtree before passive cleanups run, so `remove()` in the cleanup
+always arrived too late. **Guarding the cleanup did not help** — the warning is
+Cloudflare noticing an untorn-down disappearance — so teardown moved to just before
+`setStatus('success')`, while the container is still attached. Both are written into
+the spec as §6.2a.
+
+**Bundle: +2.5 KB gzipped**, 192.3 → 194.8 KB, measured with a worktree and a copied
+`node_modules`. `api.js` is third-party and never appears in that figure. ⚠️ **The
+176.7 KB baseline in the Resume Request entry below is stale** — five features have
+landed since and current `main` is 192.3 KB. No new `'use client'` boundary; the widget
+lives inside the form, which was already one.
+
+198 tests (31 new), lint clean, build clean. Browser-verified at 1280 and 390: no
+horizontal overflow (378 px document at 390 px), the widget renders `flexible` and
+dark, three real end-to-end sends with `resumeSent` both `true` and `false`, a
+submission with no token makes **no request at all**, and FR-7a is intact — the only
+resume-ish `href` in the served markup is the `mailto:` fallback. The 403 client branch
+was exercised with a stubbed response, Cloudflare having by then escalated the
+automated browser to an interactive challenge, which is the control working.
+
+**Carried forward — not done in this feature:**
+
+- **Two configuration steps stand between this and a working production gate**, and
+  neither is code. The widget's domain list in the Cloudflare dashboard must contain
+  `www.dasigr.com` as well as `localhost`, and the three variables must be set in
+  Vercel with **`TURNSTILE_HOSTNAMES=www.dasigr.com,dasigr.com` and never `localhost`**.
+  Until then production fails closed on every submission — loudly, but completely.
+- **Preview deployments will `403`.** Turnstile validates a fixed domain list and Vercel
+  preview URLs are generated per deploy, so the widget will not render there. Accepted
+  (spec §10.3, option 1); revisit only when a preview needs to demo the form.
+- **The route still has no rate limit.** §8's `429` remains reserved and unreturned.
+  A token cannot be replayed, but nothing caps how many challenges a determined solver
+  works through. When it lands it belongs *before* the Turnstile check, per FR-7, and
+  **not as a module-level `Map`** — §8 warns each invocation may be a fresh instance.
+- **The route still has no unit test and still cannot have one** under the current
+  Vitest glob. Its ordering is proven by curl and the dev log only.
+- **`EMAIL_FROM` is still `onboarding@resend.dev`**, so every recruiter's copy is still
+  rejected with a 403 by Resend. Untouched here, still a launch prerequisite.
+- **The PDF is still committed to a public GitHub repo** (`origin`), so
+  `raw.githubusercontent.com` serves it and the FR-7a gate remains decorative. **A spam
+  control on the form does not touch this, and finishing this feature must not be read
+  as closing it.**
+- **`feature/spam-protection-honeypot` is still an undeleted local branch** from the
+  previous feature.
+- **`public/romualdo-dasig-portrait.jpg` is still 5.5 MB.** Untouched again.
 
 ### Spam Protection — Honeypot — completed 2026-09-17
 
