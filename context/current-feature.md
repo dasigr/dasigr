@@ -1,74 +1,93 @@
-# Current Feature: Spam Protection — Honeypot
+# Current Feature
 
 ## Status
 
-In Progress
+Not Started
 
 ## Goals
 
-- `POST /api/contact` rejects a submission whose `_website` honeypot is filled:
-  no PDF read, no Resend call, no lead notification.
-- **The rejection is byte-identical to a success** (§8): status `200`, body
-  `{ "success": true, "resumeSent": <what the submission asked for> }`, same
-  headers. A bot must not be able to tell it was caught.
-- The decision lives in `src/lib/` as a pure function, not inline in the route,
-  and is covered by Vitest — including the identical-response requirement, which
-  is the part a future refactor can silently break.
-- The three source comments that currently say the check is **not** implemented
-  (`route.ts` header, `contact-form.tsx` header + honeypot markup,
-  `contact-schema.ts` `_website`) are corrected in the same change, so nothing in
-  the tree still tells the next reader the field is decorative.
-- Verified end-to-end: a `curl` with `_website` filled returns the success body
-  and sends nothing; a normal submission still delivers both emails.
-- `npm run test`, `npm run lint`, `npm run build` all pass.
+<!-- What success looks like, as bullet points. -->
 
 ## Notes
 
-**Scope is the honeypot only.** §8 names three spam controls — Turnstile (403),
-the Upstash rate limit (429), and the honeypot. This feature is the third one.
-`403` and `429` stay reserved and unreturned; `captchaToken` is not added to the
-schema. The honeypot is the one control that needs no third-party account, no new
-env var, and no bundle cost, which is why it goes first.
-
-**The field already exists and is already wired.** `contact-form.tsx:294-311`
-renders `_website` off-screen (`-left-[9999px]`, not `display:none` — a bot that
-reads styles skips hidden fields but fills one it can "see"), sends it, and
-`contactSchema` accepts it as `z.optional(z.string())`. **Do not change it to
-`maxLength(0)`** — a 400 on a filled honeypot is exactly the tell §8 forbids. The
-schema keeps accepting it; the route decides what to do with it.
-
-**Identical means identical, including `resumeSent`.** The success body varies
-(`resumeSent: true | false` by what the submitter ticked). A rejection that always
-returns `true` is distinguishable to any bot that submits with the box unticked.
-Mirror the parsed `requestResume` value.
-
-**Where the check sits in the order matters.** §8's FR-7 diagram puts the honeypot
-after validation. Since the schema accepts `_website`, validation can still return
-a `400` to a bot that also sent a bad email — decide deliberately whether a tripped
-honeypot short-circuits ahead of validation, and record the reasoning. Timing is
-also a weak tell: the rejection returns without two Resend round-trips, so it is
-measurably faster. Note it; do not build fake latency for it.
-
-**Treat whitespace as empty.** A trimmed-empty `_website` is not a trip — browser
-autofill and password managers can put junk in a field a human never saw, and a
-false positive here is a silently lost recruiter lead, which FR-7a calls worse
-than no gate.
-
-**Log the rejection server-side.** The bot sees success; the owner needs to see
-that mail was suppressed, or a misfiring honeypot looks like zero inbound traffic.
-Match the existing `console.info('[contact] …')` style in the route.
-
-**Carried forward from the last contact feature and still true after this one:**
-the route still has no rate limit and no captcha, so the Resend quota is still
-reachable by anything that can POST valid JSON with an empty `_website`; and when
-the limit does land, **do not use a module-level `Map`** — §8 warns each invocation
-may be a fresh instance.
-
-Testing follows CLAUDE.md: `src/lib/*.test.ts` only, `environment: "node"` — the
-route handler itself is not unit-tested, so the logic has to leave the route to be
-testable at all.
+<!-- Context, constraints, or details from the spec. -->
 
 ## History
+
+### Spam Protection — Honeypot — completed 2026-09-17
+
+`_website` had been rendered, sent and ignored since the form landed. It is now
+the route's first spam control, and **the interesting half is not the drop — it
+is the answer.** §8 does not ask for a rejection, it asks for a rejection a bot
+cannot detect, and that half is invisible at a glance: both branches now leave
+through the one `RESPONSES.accepted` call carrying the same `resumeSent` the
+submitter asked for. The tempting shortcut is `resumeSent: true` on the rejected
+path, and it is a tell to any bot that unticks the resume box and reads the body.
+Verified rather than asserted — the caught response and the delivered one diff to
+nothing but `Date`.
+
+That parity is why the decision is `src/lib/spam.ts` and not two lines in the
+route: it is silently breakable by any later edit to the success path, and the
+route is the one file the suite cannot see (`vitest.config.mts` scopes to
+`src/{actions,lib}`). 15 tests pin it, including a key-set comparison asserting
+`deliver` is the only field that differs between a caught bot and a real lead.
+**The tests pin the decision, not its placement** — a future edit could move the
+call below the PDF read and nothing would fail.
+
+**Two orderings had to be chosen, and both are recorded in the source.**
+
+The check runs **after** Zod, which is §8's own order and also the one that leaks
+least. Running it first would hand a bot a differential it could probe for: the
+same garbage payload returns `400` with the field empty and `200` with it filled.
+Validating first means the honeypot value changes the response for no input at
+all. It then runs **before** the env read and the PDF read, which leaves a smaller
+differential in the other direction — with `RESEND_API_KEY` unset or the PDF
+missing from the bundle, a caught bot gets its 200 while a real submission gets a
+500. Taken knowingly: that state is one where every legitimate lead is already
+being lost, and the alternative is reading a 194 KB file off disk for every spam
+hit, which is the cost the honeypot exists to avoid.
+
+**Whitespace is not a trip.** Autofill and password managers can put a space into
+a field the human never saw, and a false positive here is a recruiter lead that
+vanishes behind a success message — the silent loss FR-7a rates worse than having
+no gate at all. The rejection is logged server-side with the first 80 characters
+of the value, for the same reason: if leads ever stop arriving, that line is what
+tells spam apart from a misfiring honeypot.
+
+The one observable difference left is **timing** — 1–3 ms for a caught bot against
+4960 ms for a real send, both measured in the dev log. Recorded and deliberately
+not papered over: padding the response with fake latency buys nothing against a bot
+that is not timing us.
+
+Four comments claiming the check was not implemented were corrected in the same
+change, and the schema's `_website` now carries a warning against the obvious
+tightening — `maxLength(0)` is the change that breaks this feature, because a 400
+naming the field tells the bot exactly which one caught it.
+
+167 tests pass, lint clean, build clean. Verified against the running route with
+curl: filled honeypot with the resume ticked and unticked (`200`, correct
+`resumeSent`, nothing sent), filled honeypot with a bad email (`400` — validation
+still wins), and a whitespace value delivering both emails for real. In the browser
+the field is `tabIndex: -1`, inside `aria-hidden`, at `left: -9999px`, and absent
+from the form's tab order, so no keyboard or screen-reader user can reach it.
+
+**Carried forward — not done in this feature:**
+
+- **The route still has no rate limit and no captcha.** This stops the naive bot
+  that fills every input; anything posting JSON directly with `_website` empty
+  still reaches Resend, so the quota and sender reputation are still the exposure.
+  Turnstile (403) and the Upstash limit (429) remain reserved and unreturned. When
+  the limit lands, **do not use a module-level `Map`** — §8 warns each invocation
+  may be a fresh instance.
+- **The route has no unit test and cannot have one** under the current Vitest
+  glob. The check's placement is proven by curl and the dev log only.
+- **`EMAIL_FROM` is still `onboarding@resend.dev`**, so every recruiter's copy is
+  still rejected with a 403. Unchanged by this feature and still a launch
+  prerequisite.
+- **The PDF is still committed to a public GitHub repo** (`origin`), so the FR-7a
+  gate is still decorative — `raw.githubusercontent.com` serves the file. A spam
+  control on the form does not touch that.
+- **`public/romualdo-dasig-portrait.jpg` is still 5.5 MB.** Untouched again.
 
 ### Sugbo Rentals Replaces Accu-Glass in the Featured Grid — completed 2026-09-14
 
